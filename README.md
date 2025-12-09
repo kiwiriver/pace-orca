@@ -48,6 +48,12 @@ For development and testing, configure your API keys:
 
 
 ## Installation & Configuration
+### File structure
+- /tools: source code, do not change this folder name, all modules are imported follow the pattern of import tools.orca_*
+- /scripts: script to run the code
+- /test: run test here
+- /html: html template to show multiple rapid response. Move it to your folder and change its name to index.html
+- /logo: orca logos designed by Daniel Gao/Meng Gao. 
 
 ### Environment Variables
 location of the key and the path of the package can be set through environmental variables (see scripts in /run)
@@ -75,7 +81,6 @@ bash run_spot
 ```bash
 bash run_rapid spexone_fastmapol
 ```
-
 
 ## Automated Processing
 Set up cron jobs for automatic report generation:
