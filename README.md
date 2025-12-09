@@ -53,7 +53,7 @@ For development and testing, configure your API keys:
 - /scripts: script to run the code
 - /test: run test here
 - /html: html template to show multiple rapid response. Move it to your folder and change its name to index.html
-- /logo: orca logos designed by Daniel Gao/Meng Gao. 
+- /logo: orca logos designed by Daniel & Meng.
 
 ### Environment Variables
 location of the key and the path of the package can be set through environmental variables (see scripts in /run)
