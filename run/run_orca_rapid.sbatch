@@ -8,20 +8,21 @@ mamba=/accounts/mgao1/.local/bin/mamba
 $mamba activate py3.12  # Replace with your environment name if different
 echo "activate" $mamba
 
-pyfile="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/orca/orca/run_orca.py"
-
-# Output confirmation
+pyfile="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/orca/tools/orca_run.py"
 echo "Using file: $pyfile"
+
+#load environment variable for package path and key path                                                                         
+export MAPOLTOOL_LAB_PATH="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/orca/"
+export MAPOLTOOL_KEY_PATH="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/key/"
 
 # Set the tspan_start to one day ago based on current time
 #tspan_start=$(date -d "yesterday" "+%Y-%m-%d")  # e.g., "2025-10-01"
-tspan_start=$(date -d "1 day ago" "+%Y-%m-%d")
 tspan_start=$(date -d "2 day ago" "+%Y-%m-%d")
 
 # Set tspan_end to the same date (adjust this if needed)
 tspan_end="$tspan_start"
 
-#test 20251029T044528
+#test for a given granuel  20251029T044528
 #tspan_start="2025-10-29T04:45:00"
 #tspan_end="2025-10-29T04:50:00"
 

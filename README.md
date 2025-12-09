@@ -12,6 +12,25 @@ Features:
 # Contribution
 This repo is created by PACE FastMAPOL team. Any contribution is welcome.
 
+This repo also supports PACE Rapid Response Efforts (git repo: [https://github.com/skyecaplan/pace-rapid-response](https://github.com/skyecaplan/pace-rapid-response))
+
+A basic version of the code is included in [https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools](https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools) for basic data download, aerosol detection and plot.
+
+## Examples
+
+**Spotlight scene example:**
+[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight/html/harp2_fastmapol_20251124T101339_n1_aod0.01_chat5.html](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight/html/harp2_fastmapol_20251124T101339_n1_aod0.01_chat5.html)
+
+**General portal:**
+[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight)
+
+**Rapid response example:**
+[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/rapid_pace/html/harp2_fastmapol_2025-12-03_2025-12-03_n4_aod0.3_chat5.html](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/rapid_pace/html/harp2_fastmapol_2025-12-03_2025-12-03_n4_aod0.3_chat5.html)
+
+**General portal:**
+[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/rapid_response/](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/rapid_response/)
+
+
 ## Add key for earthdata and chatgsfc
 for development test:
 - add the chatgsfc api key in key/chatgsfc_api_key.txt
