@@ -1,73 +1,86 @@
-<!---![FastMAPO Logo](img/fastmapol1.png)--->
-<img src="logo/orca_logo1.png" alt="drawing" width="500"/>
+<div align="right">
+  <img src="logo/orca_logo1.png" alt="ORCA Logo" width="200"/>
+</div>
 
-# FastMAPOL Toolkit: ORCA-Observation and Retrieval Characterization with AI
-Features:
-- 1. download PACE HARP2, SPEXone L1C and L2 data for a given day (or automatically through cron)
-- 2. find the scene satisfies given criteria (on aod range, spatial coverage etc) for aerosol event detection
-- 3. generate plots on various aerosol properties from FastMAPOL or RemoTAP product suites
-- 4. provide aerosol information to ChatGSFC for interpretation of aerosol type, source, transport, impacts
-- 5. create an html page and hosted on OEL Fileshare
- 
-# Contribution
-This repo is created by PACE FastMAPOL team. Any contribution is welcome.
+# FastMAPOL Toolkit: ORCA
+## Observation and Retrieval Characterization with AI
 
-This repo also supports PACE Rapid Response Efforts (git repo: [https://github.com/skyecaplan/pace-rapid-response](https://github.com/skyecaplan/pace-rapid-response))
+### Key Features
 
-A basic version of the code is included in [https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools](https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools) for basic data download, aerosol detection and plot.
+- **Automated Data Download**: Retrieve PACE HARP2, SPEXone L1C and L2 data for specified dates or via automated cron jobs
+- **Smart Scene Detection**: Identify scenes meeting specific criteria (AOD range, spatial coverage) for aerosol event analysis
+- **Advanced Visualization**: Generate comprehensive plots of aerosol properties from FastMAPOL or RemoTAP product suites
+- **AI-Powered Analysis**: Integrate aerosol data with ChatGSFC for intelligent interpretation of aerosol types, sources, transport patterns, and impacts
+- **Web Publishing**: Create and host HTML reports on OEL Fileshare
 
-## Examples
+---
 
-**Spotlight scene example:**
-[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight/html/harp2_fastmapol_20251124T101339_n1_aod0.01_chat5.html](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight/html/harp2_fastmapol_20251124T101339_n1_aod0.01_chat5.html)
+## Contribution
 
-**General portal:**
-[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight)
+This repository is developed and maintained by the **PACE FastMAPOL team**. We welcome any contributions. 
 
-**Rapid response example:**
-[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/rapid_pace/html/harp2_fastmapol_2025-12-03_2025-12-03_n4_aod0.3_chat5.html](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/rapid_pace/html/harp2_fastmapol_2025-12-03_2025-12-03_n4_aod0.3_chat5.html)
+### Related Projects
 
-**General portal:**
-[https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/rapid_response/](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/rapid_response/)
+This toolkit supports **PACE Rapid Response Efforts**:
+- **Main Repository**: [pace-rapid-response](https://github.com/skyecaplan/pace-rapid-response)
+- **Basic Tools**: A foundational version for data download, aerosol detection, and plotting is available in the [tools directory](https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools)
 
+---
 
-## Add key for earthdata and chatgsfc
-for development test:
-- add the chatgsfc api key in key/chatgsfc_api_key.txt
-- add earthdata appkey in key/earthdata_appkey.txt
-- all the files inside the key folder will be ignored in the repository
+## 📊 Live Examples
 
-location of the key can be set through environment variable
+### Spotlight Scenes
+- **Example Scene**: [HARP2 FastMAPOL Analysis](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight/html/harp2_fastmapol_20251124T101339_n1_aod0.01_chat5.html)
+- **Browse All**: [Spotlight Portal](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight)
 
-```
+### Rapid Response
+- **Example Analysis**: [Daily Rapid Response](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/rapid_pace/html/harp2_fastmapol_2025-12-03_2025-12-03_n4_aod0.3_chat5.html)
+- **Browse All**: [Rapid Response Portal](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/rapid_response/)
+
+---
+
+## 🔐 API Key Configuration
+
+For development and testing, configure your API keys:
+
+1. **ChatGSFC API Key**: Save to `key/chatgsfc_api_key.txt`
+2. **Earthdata App Key**: Save to `key/earthdata_appkey.txt`
+
+> 🔒 **Security Note**: All files in the `key/` folder are automatically ignored by git
+
+### Environment Variables
+
+```bash
 export MAPOLTOOL_KEY_PATH="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/key/"
-```
-
-## Code installation
-```
 export MAPOLTOOL_LAB_PATH="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/orca/"
 ```
 
-## set customize html header information
-```
+## Installation & Configuration
+### Custom HTML Headers
+
+Configure custom header information in:
+```bash
 /tools/orca_header.py
 ```
+## Testing
 
-## test
-copy code from /run into /test (will not be included in git repo)
-modify for any timestamp and run
+### Test scripts are available in the /test folder (results excluded from git):
+
+### Spotlight Analysis
+```bash
+bash run_spot
 ```
-bash run_orca_spotlight.sbatch
+### Rapid Response Analysis
+```bash
+bash run_rapid spexone_fastmapol
 ```
 
-modify for any given time (or default 1/2 days ago)
-```
-bash run_orca_rapid.sbatch spexone_fastmapol
-```
 
+## Automated Processing
+Set up cron jobs for automatic report generation:
 
-## setup cron job for automatic rapid page generation
-```
+### Cron Management Commands
+```bash
 crontab -l #list
 crontab -e #edit
 date #system date                                                                                                     
@@ -75,8 +88,8 @@ timedatectl #check and set system time
 systemctl status cron #check cron job status
 ```
 
-crontab setup example:
-```
+### Example Cron Configuration
+```bash
 0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_orca_rapid.sbatch harp2_fastmapol >> rapid_log_harp2_fastmapol.log 2>&1
 0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_orca_rapid.sbatch spexone_fastmapol >> rapid_log_spexone_fastmapol.log 2>&1
 0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_orca_rapid.sbatch spexone_remotap >> rapid_log_spexone_remotap.log 2>&1
