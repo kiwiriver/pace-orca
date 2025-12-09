@@ -19,8 +19,8 @@ This repository is developed and maintained by the **PACE FastMAPOL team**. Any 
 ### Related Projects
 
 This toolkit supports **PACE Rapid Response Efforts**:
-- **Main Repository**: [pace-rapid-response](https://github.com/skyecaplan/pace-rapid-response)
-- **Basic Version**: A simpler version of the ORCA tool for PACE data download, aerosol detection, and plotting is available in the [tools directory](https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools)
+- **Git Repository**: [pace-rapid-response](https://github.com/skyecaplan/pace-rapid-response)
+- **Basic(baby) Version**: A simpler version of the ORCA tool for PACE data download, aerosol detection, and plotting is available in the [tools directory](https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/)
 
 ---
 
