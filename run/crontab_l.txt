@@ -1,0 +1,12 @@
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_rapid_fixed.cron harp2_fastmapol >> rapid_log_harp2_fastmapol.log 2>&1
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_rapid_fixed.cron spexone_fastmapol >> rapid_log_spexone_fastmapol.log 2>&1
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_rapid_fixed.cron spexone_remotap >> rapid_log_spexone_remotap.log 2>&1
+
+#31 22 * * * bash /accounts/mgao1/mfs_pace/rapid/test.sh
+#* * * * * bash /accounts/mgao1/mfs_pace/rapid/test.sh
+# Edit this file to introduce tasks to be run by cron.
+# 
+#* * * * * bash /accounts/mgao1/mfs_pace/rapid/test.sh >> test3.log
+#* * * * * bash /accounts/mgao1/mfs_pace/rapid/test.sh >> /accounts/mgao1/mfs_pace/rapid/test2.log
+#41 22 * * * bash /accounts/mgao1/mfs_pace/rapid/test.sh
+#40 22 * * * bash /accounts/mgao1/mfs_pace/rapid/test.sh >> /accounts/mgao1/mfs_pace/rapid/test2.log 2>&1

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PACE Data Viewer</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  header {
+    background: #f0f0f0;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  input {
+    padding: 5px;
+    font-size: 1rem;
+    width: 150px;
+  }
+  #dateList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 5px;
+  }
+  #dateList button {
+    background: #e6e6e6;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  #dateList button:hover {
+    background: #d0d0d0;
+  }
+  #columnToggles {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  #columnToggles button {
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  #columnToggles button.active {
+    background: #004c99;
+  }
+  main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .column {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+    transition: flex 0.3s ease;
+  }
+  .column:last-child {
+    border-right: none;
+  }
+  .column h2 {
+    text-align: center;
+    background: #fafafa;
+    margin: 0;
+    padding: 15px 0;
+    color: #0066cc;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  a {
+    text-decoration: none;
+    color: #0066cc;
+    display: block;
+    margin: 5px 0;
+    word-wrap: break-word;
+  }
+  iframe {
+    width: 100%;
+    height: 8000px;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  .file-label {
+    font-weight: bold;
+    color: #333;
+    margin: 10px 0 5px 0;
+    padding: 5px;
+    background: #f9f9f9;
+    border-left: 3px solid #0066cc;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="top-row">
+      <h3>PACE Data Viewer</h3>
+      <div>
+        <label for="dateInput">Date/Timestamp: </label>
+        <input id="dateInput" placeholder="auto detect" />
+        <button onclick="updateView()">Go</button>
+      </div>
+    </div>
+
+    <div id="dateList"></div>
+    <div id="columnToggles">
+      <button class="active" data-col="col1">HARP2 FastMAPOL</button>
+      <button class="active" data-col="col2">SPEXone FastMAPOL</button>
+      <button class="active" data-col="col3">SPEXone REMOTAP</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="column" id="col1">
+      <h2>HARP2 FastMAPOL</h2>
+    </div>
+    <div class="column" id="col2">
+      <h2>SPEXone FastMAPOL</h2>
+    </div>
+    <div class="column" id="col3">
+      <h2>SPEXone REMOTAP</h2>
+    </div>
+  </main>
+
+<script>
+const baseURL = "https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight/html/";
+
+const keywords = {
+  col1: "harp2_fastmapol",
+  col2: "spexone_fastmapol",
+  col3: "spexone_remotap"
+};
+
+// Fetch file list
+async function fetchFileList() {
+  const response = await fetch(baseURL);
+  const text = await response.text();
+  const matches = [...text.matchAll(/href="([^"]+\.html)"/g)];
+  return matches.map(m => m[1]);
+}
+
+
+function extractDate(filename) {
+  // Try timestamp format first (20240906T202704)
+  let m = filename.match(/(\d{8}T\d{6})/);
+  if (m) return m[1];
+  
+  // Try date format (2025-11-09)
+  m = filename.match(/(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : null;
+}
+
+function formatDisplayValue(value) {
+  if (!value) return value;
+  
+  // If it's a timestamp format (20240906T202704)
+  if (value.length === 15 && value.includes('T')) {
+    const year = value.substr(0, 4);
+    const month = value.substr(4, 2);
+    const day = value.substr(6, 2);
+    const hour = value.substr(9, 2);
+    const minute = value.substr(11, 2);
+    const second = value.substr(13, 2);
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+  }
+  
+  // Otherwise return as-is (already formatted date)
+  return value;
+}
+
+function createSimplifiedLabel(filename, index) {
+  let instrument = '';
+  let algorithm = '';
+  
+  if (filename.includes('harp2_fastmapol')) {
+    instrument = 'HARP2';
+    algorithm = 'FastMAPOL';
+  } else if (filename.includes('spexone_fastmapol')) {
+    instrument = 'SPEXone';
+    algorithm = 'FastMAPOL';
+  } else if (filename.includes('spexone_remotap')) {
+    instrument = 'SPEXone';
+    algorithm = 'REMOTAP';
+  }
+  
+  const dateTime = extractDate(filename);
+  const formattedTime = formatDisplayValue(dateTime);
+  
+  return `${instrument} ${algorithm} - ${formattedTime} (${index})`;
+}
+
+async function updateView(targetValue = null) {
+  const files = await fetchFileList();
+  const inputValue = document.getElementById("dateInput").value.trim();
+  const values = [...new Set(files.map(extractDate).filter(Boolean))].sort();
+  const listContainer = document.getElementById("dateList");
+
+  // --- Populate buttons ---
+  listContainer.innerHTML = "";
+  values.forEach(v => {
+    const btn = document.createElement("button");
+    btn.textContent = formatDisplayValue(v);
+    btn.onclick = () => {
+      document.getElementById("dateInput").value = v;
+      updateView(v);
+    };
+    listContainer.appendChild(btn);
+  });
+
+  const selectedValue = targetValue || inputValue || values[values.length - 1];
+
+  // Reset columns
+  for (const [id, key] of Object.entries(keywords)) {
+    document.getElementById(id).innerHTML = `<h2>${key.replace(/_/g, ' ').toUpperCase()}</h2>`;
+  }
+
+  // Filter files by selected value
+  const selectedFiles = files.filter(f => extractDate(f) === selectedValue);
+
+  // Group files by column and add sequential numbering
+  for (const [colId, key] of Object.entries(keywords)) {
+    const col = document.getElementById(colId);
+    const matchingFiles = selectedFiles.filter(f => f.includes(key));
+    
+    matchingFiles.forEach((f, index) => {
+      const block = document.createElement("div");
+      const simplifiedLabel = createSimplifiedLabel(f, index + 1);
+      
+      block.innerHTML = `
+        <div class="file-label">${simplifiedLabel}</div>
+        <a href="${baseURL + f}" target="_blank">${f}</a>
+        <iframe src="${baseURL + f}"></iframe>
+      `;
+      col.appendChild(block);
+    });
+  }
+
+  document.title = `PACE Data Viewer - ${formatDisplayValue(selectedValue)}`;
+}
+
+// --- Toggle column visibility ---
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleButtons = document.querySelectorAll("#columnToggles button");
+  toggleButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const colId = btn.dataset.col;
+      const col = document.getElementById(colId);
+      const isActive = btn.classList.toggle("active");
+
+      if (isActive) {
+        col.style.display = "block";
+      } else {
+        col.style.display = "none";
+      }
+
+      // Recalculate visible columns and adjust width
+      const visibleCols = [...document.querySelectorAll(".column")]
+        .filter(c => c.style.display !== "none");
+      const widthPercent = 100 / visibleCols.length;
+      visibleCols.forEach(c => (c.style.flex = `0 0 ${widthPercent}%`));
+    });
+  });
+
+  updateView();
+});
+</script>
+</body>
+</html>

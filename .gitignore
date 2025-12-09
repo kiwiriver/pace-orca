@@ -1,0 +1,18 @@
+# remove models from the git for future development, need another home
+#do not include anything in the key folder
+/key/*
+/tmp
+/env
+__pycache__
+.ipynb_checkpoints
+*~
+.*
+!.gitignore
+*.out
+*.exe
+*/__pycache__
+*.nc
+*.pk
+*.pt
+*.log
+*.xml
