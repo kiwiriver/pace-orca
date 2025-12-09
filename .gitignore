@@ -1,6 +1,13 @@
 # remove models from the git for future development, need another home
 #do not include anything in the key folder
-/key/*
+
+#for testing do not include any other files
+test/*
+# But don't ignore these specific files
+!/test/run_rapid
+!/test/run_spot
+#other genereal folder and file to ignore
+__pycache__
 /tmp
 /env
 __pycache__

@@ -12,12 +12,11 @@ import cartopy.crs as ccrs
 from pathlib import Path
 from matplotlib import rcParams
 
-from tools.orca_html_all import *
-from tools.orca_plot_map import *
+from tools.orca_html import *
+from tools.orca_plot import *
 from tools.orca_download import *
-from tools.orca_tool import *
+from tools.orca_utility import *
 
-import os
 import requests
 import subprocess
 
@@ -140,16 +139,4 @@ def format_simple_title(sensor, suite2, tspan):
             {date_str}
         </p>
     """
-
-    #formatted_title = f"""
-    #<div style="text-align: center; margin: 20px 0; padding: 20px; 
-    #            background: #f8f9fa; border-radius: 8px; border-left: 5px solid #0066cc;">
-    #    <h1 style="margin: 0; font-size: 2em; color: #333; font-weight: 500;">
-    #        PACE Polarimetric L2 Data Live View ({product_name})
-    #    </h1>
-    #    <p style="margin: 10px 0 0 0; font-size: 1.1em; color: #666; font-weight: 400;">
-    #        {date_str}
-    #    </p>
-    #</div>
-    #"""
     return formatted_title

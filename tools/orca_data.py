@@ -1,4 +1,12 @@
+"""
+tools to deal with data
+"""
+
+import os
+import glob
 import re
+import requests
+import subprocess
 import numpy as np
 import xarray as xr
 

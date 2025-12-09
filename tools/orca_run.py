@@ -30,15 +30,18 @@ from matplotlib import rcParams
 from datetime import datetime, timedelta
 
 #add the path of the tools
-mapol_path=os.path.expanduser('~/github/mapoltool')
+#mapol_path=os.path.expanduser('~/github/mapoltool')
+key_path = os.environ.get('MAPOLTOOL_KEY_PATH') or '../key/'
+mapol_path = os.environ.get('MAPOLTOOL_LAB_PATH') or '/mnt/mfs/mgao1/analysis/github/mapoltool/lab/'
 sys.path.append(mapol_path)
 
-from tools.orca_html_all import *
-from tools.orca_html_tool import *
-from tools.orca_plot_map import *
-from tools.orca_util import *
+from tools.orca_html import *
+from tools.orca_header import *
+from tools.orca_plot import *
+from tools.orca_utility import *
 from tools.orca_download import *
 from tools.orca_ai import *
+from tools.orca_pace import *
 
 from matplotlib import rcParams
 
@@ -181,12 +184,9 @@ aod_min, aod_min_plot, npixel_min = set_default_values(dict1)
 print("aod_min, aod_min_plot, npixel_min", aod_min, aod_min_plot, npixel_min)
 
 ####DO NOT SHARE the KEYS###########
-appkey=open('../key/earthdata_appkey.txt').read().strip()
-api_key=open('../key/chatgsfc_api_key.txt').read().strip()
+appkey = open(os.path.join(key_path,'earthdata_appkey.txt')).read().strip()
+api_key = open(os.path.join(key_path, 'chatgsfc_api_key.txt')).read().strip()
 
-#flag_rm = False
-#flag_earthdata_cloud = True
-#flag_earthdata_cloud = False
 flag_rm = not args.no_rm  # True by default, False if --no_rm is specified
 flag_earthdata_cloud = not args.no_cloud  # True by default, False if --no_cloud is specified
 flag_plot_filter = args.plot_filter
@@ -195,8 +195,6 @@ print("flag_plot_filter:", flag_plot_filter)
 if(flag_earthdata_cloud):
     auth = earthaccess.login(persist=True)
 
-    
-# Change default font to something available
 rcParams['font.family'] = 'serif' 
 rcParams['font.size'] = '12' 
 
@@ -315,7 +313,6 @@ print("scale1v =", scale1v)
 #flag_plot_filter=False
 
 ##make plots
-
 #infov: timestamp3, boundingbox, center, aerosols
 infov, infov_dict = make_plot(filev2, plot_path, l1c_path, \
                               flag_earthdata_cloud=flag_earthdata_cloud, aod_min_plot=aod_min_plot,\

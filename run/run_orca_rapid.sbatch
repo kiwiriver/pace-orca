@@ -1,52 +1,38 @@
 #!/bin/bash
-#SBATCH --job-name=rapid_harp2          # Job name
-#SBATCH --ntasks=1                    # Number of tasks
-#SBATCH --partition=research             # SLURM partition (adjust as necessary)
+#SBATCH --job-name=rapid          # Job name
+#SBATCH --ntasks=1                      # Number of tasks
+#SBATCH --partition=research            # SLURM partition (adjust as necessary)
 
-# Activate your Python environment with required dependencies
-mamba activate py3.12  # Adjust this to your Python environment name
+# Activate your Python environment
+mamba=/accounts/mgao1/.local/bin/mamba
+$mamba activate py3.12  # Replace with your environment name if different
+echo "activate" $mamba
 
-#python /accounts/mgao1/github/mapoltool/tools/detection/detection_run.py
+pyfile="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/orca/orca/run_orca.py"
 
-# Run the Python script with the necessary arguments
-# on poseidon
-# Define two possible file paths
-file1="/home/mgao/github/mapoltool/tools/detection/detection_run.py"
-file2="/accounts/mgao1/github/mapoltool/tools/detection/detection_run.py"
-
-# Check if the first file exists
-if [ -f "$file1" ]; then
-    pyfile="$file1"  # Use file1 if found
-elif [ -f "$file2" ]; then
-    pyfile="$file2"  # Use file2 if found
-else
-    echo "Neither file exists. Exiting."
-    exit 1  # Exit if neither file is found
-fi
-
-# Output the chosen file path
+# Output confirmation
 echo "Using file: $pyfile"
 
-#pyfile="/home/mgao/github/mapoltool/tools/detection/detection_run.py"
-#pyfile="/accounts/mgao1/github/mapoltool/tools/detection/detection_run.py"
+# Set the tspan_start to one day ago based on current time
+#tspan_start=$(date -d "yesterday" "+%Y-%m-%d")  # e.g., "2025-10-01"
+tspan_start=$(date -d "1 day ago" "+%Y-%m-%d")
+tspan_start=$(date -d "2 day ago" "+%Y-%m-%d")
 
-#tspan = ("2025-09-20", "2025-09-20")
-#tspan_start="2024-09-30"
-#tspan_start="2025-01-09"
-tspan_start="2025-09-29"
-#tspan_start="2025-09-30"
-tspan_start="2025-10-01"
+# Set tspan_end to the same date (adjust this if needed)
+tspan_end="$tspan_start"
 
-tspan_end=$tspan_start
+#test 20251029T044528
+#tspan_start="2025-10-29T04:45:00"
+#tspan_end="2025-10-29T04:50:00"
 
-product='harp2_fastmapol'
+# Read the product passed by the cron job
+product=$1  # First parameter to the script (e.g., harp2_fastmapol, spexone_fastmapol, spexone_remotap)
+
+#direct set product
+#product='harp2_fastmapol'
 #product='spexone_fastmapol'
 #product='spexone_remotap'
-    
-appkey="KEY_REDACTED"
-api_key="KEY_REDACTED"
 
-sed "s/<appkey>/\"$appkey\"/g" $pyfile | sed "s/<api_key>/\"$api_key\"/g" > newpyjob.py
-
-
-python newpyjob.py --tspan_start $tspan_start --tspan_end $tspan_end --product $product
+# Execute the Python script
+python=/accounts/mgao1/miniforge3/envs/py3.12/bin/python
+$python $pyfile --tspan_start "$tspan_start" --tspan_end "$tspan_end" --product "$product" --no_cloud

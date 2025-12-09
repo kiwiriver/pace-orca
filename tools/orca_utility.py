@@ -11,6 +11,9 @@ import requests
 
 import os
 import glob
+import re
+import requests
+import subprocess
 import numpy as np
 import xarray as xr
 
@@ -19,17 +22,10 @@ import cartopy.crs as ccrs
 from pathlib import Path
 from matplotlib import rcParams
 
-from tools.orca_html_all import *
-from tools.orca_plot_map import *
-from tools.orca_download import *
-from tools.orca_tool import *
+#from tools.orca_html import *
+#from tools.orca_plot import *
+#from tools.orca_download import *
 
-import os
-import requests
-import subprocess
-
-
-    
 def set_default_values(dict1):
     """
     Handles user-provided value vs. default value.
@@ -86,73 +82,6 @@ def setup_data(tspan, sensor='PACE_HARP2', suite='MAPOL_OCEAN.V3.0', path1='./pa
     print(l2_path, l1c_path, plot_path, html_path)
     
     return l2_path, l1c_path, plot_path, html_path
-
-def select_data(filelist_l2, aod_min = 0.3, npixel_min = 100*100, iwv550=1, criteria = (30, 20, 2.0)):
-    """
-    select data based on aod_min and min npixel
-    """
-    filev2 =[]
-    for i1 in range(len(filelist_l2)):
-        file1 = filelist_l2[i1]
-        #print(file1)
-    
-        npixel_valid0, npixel_valid1,filter1 = filter_data(file1, iwv550=iwv550, aot_min = aod_min, criteria =criteria)
-        print('=====non-nan, filtered:', npixel_valid0, npixel_valid1)
-        if npixel_valid1 >=npixel_min:
-            print(file1)
-            filev2.append(file1)
-            print(' *** found: non-nan, filtered:', npixel_valid0, npixel_valid1)
-    return filev2
-
-def create_dict_by_timestamp(infov):
-    """
-    Convert a list of dictionaries into a single dictionary with timestamps as keys.
-
-    Args:
-        infov (list): List of dictionaries containing aerosol data.
-
-    Returns:
-        dict: Dictionary where keys are timestamps and values are corresponding entries.
-    """
-    return {entry['timestamp']: entry for entry in infov}
-    
-def make_plot(filev2, plot_path, l1c_path="./data/", \
-              flag_earthdata_cloud=True,\
-              sensor="PACE_HARP2", suite1="L1C",suite2="L2",\
-              iv=[40, 5, 85], iwvv=0, ivp=None, iwvvp=None,\
-              iwv_aod=1, iwv_rrs=0,\
-              aod_min_plot=None, criteria = (30, 20, 2.0),\
-              key1v = ['aot', 'ssa', 'fvf', 'sph'], 
-              vmin1v = [0, 0.7, 0, 0],
-              vmax1v = [1, 1, 1, 1],
-              cmap1v = ['YlOrRd', 'jet', 'jet', 'jet'],
-              scale1v = ['linear', 'linear', 'linear', 'linear'],
-              flag_plot_filter=False
-             ):
-    """generate plots according to filev2
-
-    after data selection, we will only plot the data within aod_min_plot, and criteria, 
-    aerosol statistics are also computed within this range to ensure quality
-    aod will be plot over all available range. 
-    """
-    
-    os.makedirs(plot_path, exist_ok=True)
-    os.makedirs(l1c_path, exist_ok=True)
-
-    infov = []
-    for file1 in filev2[:]:
-        #try:
-        info = plot_l1c_l2(file1, plot_path, iwvv=iwvv,iv=iv, iwvvp=iwvvp,ivp=ivp, iwv_aod=iwv_aod, iwv_rrs=iwv_rrs,\
-                l1c_path=l1c_path, flag_earthdata_cloud=flag_earthdata_cloud, aod_min_plot=aod_min_plot,\
-                sensor=sensor, suite1=suite1, suite2=suite2, criteria=criteria,\
-                key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v, cmap1v=cmap1v,scale1v=scale1v,\
-                           flag_plot_filter=flag_plot_filter)
-        infov.append(info)
-        #except:
-        #    print('failed to make plot', file1)
-    #create a dictionary
-    infov_dict = create_dict_by_timestamp(infov)
-    return infov, infov_dict
 
 def create_rules_table_html(rules_selection, rules_plot):
     """

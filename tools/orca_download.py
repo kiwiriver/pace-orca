@@ -13,11 +13,13 @@ import requests
 import subprocess
 import earthaccess
 from pathlib import Path
-from tools.orca_tool import *
+
 from requests.exceptions import RequestException
 
 import re
 from datetime import datetime
+from tools.orca_data import extract_timestamp
+#from tools.orca_utility import *
 
 def format_tspan(tspan):
     """
