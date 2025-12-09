@@ -1,4 +1,4 @@
-<img src="logo/orca_logo1.png" alt="ORCA Logo" width="100"/>
+<img src="logo/orca_logo1.png" alt="ORCA Logo" width="200"/>
 
 # FastMAPOL Toolkit: ORCA-Observation and Retrieval Characterization with AI
 
