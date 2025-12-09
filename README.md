@@ -1,5 +1,6 @@
-| <img src="logo/orca_logo1.png" alt="ORCA Logo" width="100"/> | <h1>FastMAPOL Toolkit: ORCA</h1><h2>Observation and Retrieval Characterization with AI</h2> |
-|:---|:---|
+<img src="logo/orca_logo1.png" alt="ORCA Logo" width="100"/>
+
+# FastMAPOL Toolkit: ORCA-Observation and Retrieval Characterization with AI
 
 ### Main Features
 
