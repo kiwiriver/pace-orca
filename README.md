@@ -1,33 +1,29 @@
-<div align="right">
-  <img src="logo/orca_logo1.png" alt="ORCA Logo" width="200"/>
-</div>
+| # FastMAPOL Toolkit: ORCA<br>## Observation and Retrieval Characterization with AI | <img src="logo/orca_logo1.png" alt="ORCA Logo" width="100"/> |
+|:---|---:|
 
-# FastMAPOL Toolkit: ORCA
-## Observation and Retrieval Characterization with AI
-
-### Key Features
+### Main Features
 
 - **Automated Data Download**: Retrieve PACE HARP2, SPEXone L1C and L2 data for specified dates or via automated cron jobs
-- **Smart Scene Detection**: Identify scenes meeting specific criteria (AOD range, spatial coverage) for aerosol event analysis
-- **Advanced Visualization**: Generate comprehensive plots of aerosol properties from FastMAPOL or RemoTAP product suites
-- **AI-Powered Analysis**: Integrate aerosol data with ChatGSFC for intelligent interpretation of aerosol types, sources, transport patterns, and impacts
+- **Aerosol Event Detection**: Identify scenes meeting specific criteria (AOD range, spatial coverage) for aerosol event analysis
+- **L1 and L2 Visualization**: Generate comprehensive plots of aerosol properties from FastMAPOL or RemoTAP product suites
+- **AI Analysis**: Integrate aerosol data with ChatGSFC for interpretation of aerosol types, sources, transport patterns, and impacts (only for educational purpose, accuracy depends on data uncertainty and AI model capability)
 - **Web Publishing**: Create and host HTML reports on OEL Fileshare
 
 ---
 
 ## Contribution
 
-This repository is developed and maintained by the **PACE FastMAPOL team**. We welcome any contributions. 
+This repository is developed and maintained by the **PACE FastMAPOL team**. Any contributions are welcome. 
 
 ### Related Projects
 
 This toolkit supports **PACE Rapid Response Efforts**:
 - **Main Repository**: [pace-rapid-response](https://github.com/skyecaplan/pace-rapid-response)
-- **Basic Tools**: A foundational version for data download, aerosol detection, and plotting is available in the [tools directory](https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools)
+- **Basic Version**: A simpler version of the ORCA tool for PACE data download, aerosol detection, and plotting is available in the [tools directory](https://github.com/skyecaplan/pace-rapid-response/tree/main/dust/mapoltool/tools)
 
 ---
 
-## 📊 Live Examples
+## Live Examples
 
 ### Spotlight Scenes
 - **Example Scene**: [HARP2 FastMAPOL Analysis](https://oceancolor.gsfc.nasa.gov/fileshare/meng_gao/pace/spotlight/html/harp2_fastmapol_20251124T101339_n1_aod0.01_chat5.html)
@@ -39,7 +35,7 @@ This toolkit supports **PACE Rapid Response Efforts**:
 
 ---
 
-## 🔐 API Key Configuration
+## API Key Configuration
 
 For development and testing, configure your API keys:
 
@@ -48,15 +44,18 @@ For development and testing, configure your API keys:
 
 > 🔒 **Security Note**: All files in the `key/` folder are automatically ignored by git
 
-### Environment Variables
 
+
+## Installation & Configuration
+
+### Environment Variables
+location of the key and the path of the package can be set through environmental variables (see scripts in /run)
 ```bash
 export MAPOLTOOL_KEY_PATH="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/key/"
 export MAPOLTOOL_LAB_PATH="/mnt/mfs/mgao1/analysis/github/mapoltool/lab/orca/"
 ```
 
-## Installation & Configuration
-### Custom HTML Headers
+### Custom HTML Headers for different applications
 
 Configure custom header information in:
 ```bash
@@ -64,7 +63,8 @@ Configure custom header information in:
 ```
 ## Testing
 
-### Test scripts are available in the /test folder (results excluded from git):
+### Example scripts are available in the /script 
+Symbolic links are also included in /test folder (results excluded from git)
 
 ### Spotlight Analysis
 ```bash

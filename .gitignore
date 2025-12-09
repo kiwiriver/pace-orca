@@ -6,6 +6,7 @@ test/*
 # But don't ignore these specific files
 !/test/run_rapid
 !/test/run_spot
+!/test/clean.sh
 #other genereal folder and file to ignore
 __pycache__
 /tmp
