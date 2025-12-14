@@ -2,6 +2,7 @@
 #SBATCH --job-name=rapid          # Job name
 #SBATCH --ntasks=1                      # Number of tasks
 #SBATCH --partition=research            # SLURM partition (adjust as necessary)
+#SBATCH --array=1-1
 
 # Activate your Python environment
 mamba=/accounts/mgao1/.local/bin/mamba
