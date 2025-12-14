@@ -1,4 +1,4 @@
-<img src="logo/orca_logo1.png" alt="ORCA Logo" width="200"/>
+<img src="logo/orca_logo_v1.png" alt="ORCA Logo" width="200"/>
 
 # PACE Toolkit: ORCA-Observation and Retrieval Characterization with AI
 
@@ -72,6 +72,15 @@ Configure custom header information in:
 
 ### Example scripts are available in the /script 
 Symbolic links are also included in /test folder (results excluded from git)
+if not there run
+```bash
+bash link.sh
+```
+
+after testing the code, remove all data except the scripts
+```bash
+bash clean.sh
+```
 
 ### Spotlight Analysis
 ```bash
@@ -96,7 +105,7 @@ systemctl status cron #check cron job status
 
 ### Example Cron Configuration
 ```bash
-0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_orca_rapid.sbatch harp2_fastmapol >> rapid_log_harp2_fastmapol.log 2>&1
-0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_orca_rapid.sbatch spexone_fastmapol >> rapid_log_spexone_fastmapol.log 2>&1
-0 5 * * * cd /accounts/mgao1/mfs_pace/rapid && bash run_orca_rapid.sbatch spexone_remotap >> rapid_log_spexone_remotap.log 2>&1
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid/test && bash run_rapid harp2_fastmapol >> rapid_log_harp2_fastmapol.log 2>&1
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid/test && bash run_rapid spexone_fastmapol >> rapid_log_spexone_fastmapol.log 2>&1
+0 5 * * * cd /accounts/mgao1/mfs_pace/rapid/test && bash run_rapid spexone_remotap >> rapid_log_spexone_remotap.log 2>&1
 ```

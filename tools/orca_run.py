@@ -32,7 +32,7 @@ from datetime import datetime, timedelta
 #add the path of the tools
 #mapol_path=os.path.expanduser('~/github/mapoltool')
 key_path = os.environ.get('MAPOLTOOL_KEY_PATH') or '../key/'
-mapol_path = os.environ.get('MAPOLTOOL_LAB_PATH') or '/mnt/mfs/mgao1/analysis/github/mapoltool/lab/'
+mapol_path = os.environ.get('MAPOLTOOL_LAB_PATH') or '/mnt/mfs/mgao1/analysis/github/pace-orca/'
 sys.path.append(mapol_path)
 
 from tools.orca_html import *
@@ -373,7 +373,7 @@ image_groups = get_images_from_subfolders(plot_path)
 #title2_html=title2_html
 hide_after_key = 'fvf'
 
-logo_path = os.path.join(mapol_path, "img", 'orca_logo1.png')
+logo_path = os.path.join(mapol_path, "logo", 'orca_logo_v1.png')
 print("====logo location:", logo_path)
 if os.path.isfile(logo_path):
     print("====find the logo")
