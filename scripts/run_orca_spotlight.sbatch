@@ -22,10 +22,12 @@ echo "Using file: $pyfile"
 
 #set timestamp
 #timestamp='20240906T202704'
+#timestamp='20250109T200019'
+timestamp='20250404T005140'
 #timestamp='20250621T172107'
-timestamp='20250612T165904'
-timestamp='20251117T172232'
-timestamp='20251124T101339'
+#timestamp='20250612T165904'
+#timestamp='20251117T172232'
+#timestamp='20251124T101339'
 tspan_start='None'
 tspan_end='None'
 
