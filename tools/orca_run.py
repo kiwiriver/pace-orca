@@ -279,7 +279,7 @@ cmap1v = ['YlOrRd', 'jet', 'jet', 'jet']
 
 key1v = ['aot', 'ssa', 'fvf', 'sph', 'chi2', 'nv_ref', 'nv_dolp']
 vmin1v = [0, 0.7, 0, 0, 0, 0, 0]
-vmax1v = [1, 1, 1, 1, 5, 170, 170]
+vmax1v = [0.5, 1, 1, 1, 5, 170, 170]
 cmap1v = ['YlOrRd', 'jet', 'jet', 'jet', 'jet', 'jet', 'jet']
 
 dict1v= {'aot':[[0, 1],'YlOrRd','linear'] , \

@@ -23,11 +23,25 @@ echo "Using file: $pyfile"
 #set timestamp
 #timestamp='20240906T202704'
 #timestamp='20250109T200019'
-timestamp='20250404T005140'
+#timestamp='20250404T005140'
 #timestamp='20250621T172107'
 #timestamp='20250612T165904'
 #timestamp='20251117T172232'
 #timestamp='20251124T101339'
+#timestamp='20260203T053050'
+#timestamp='20260130T194428'
+#timestamp='20240815T110624'
+#timestamp='20240815T110623'
+
+timestamp='20241201T202708'
+timestamp='20241210T203953'
+timestamp='20250115T201156'
+timestamp='20250109T200019'
+timestamp='20250109T200519'
+timestamp='20250110T203003'
+timestamp='20250110T203503'
+timestamp='20250531T181236'
+
 tspan_start='None'
 tspan_end='None'
 
@@ -38,8 +52,8 @@ tspan_end='None'
 
 #product=$1  # First parameter to the script (e.g., harp2_fastmapol, spexone_fastmapol)
 product="harp2_fastmapol"
-#product="spexone_fastmapol"
-#product="spexone_remotap"
+product="spexone_fastmapol"
+product="spexone_remotap"
 
 #configure min aod for selecting pixels and plot
 
@@ -59,8 +73,9 @@ destination_folder="/mnt/mfs/FILESHARE/meng_gao/pace/spotlight/html/"
 
 # Execute the Python script
 #python=/accounts/mgao1/miniforge3/bin/python
-python=/accounts/mgao1/miniforge3/envs/py3.12/bin/python
-$python $pyfile --timestamp "$timestamp" --tspan_start "$tspan_start" --tspan_end "$tspan_end" --product "$product" \
+#python=/accounts/mgao1/miniforge3/envs/py3.12/bin/python
+#$python xxx
+python $pyfile --timestamp "$timestamp" --tspan_start "$tspan_start" --tspan_end "$tspan_end" --product "$product" \
 	--aod_min_default $aod_min_default  --aod_min_plot_default $aod_min_plot_default \
 	--npixel_min_default $npixel_min_default \
 	--destination_folder "$destination_folder" --no_cloud --plot_filter
