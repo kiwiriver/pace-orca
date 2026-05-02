@@ -59,24 +59,35 @@ parser.add_argument("--timestamp", type=str, default=None, help="timestamp, if g
 parser.add_argument("--tspan_start", type=str, help="Start date of the time span (YYYY-MM-DD).")
 parser.add_argument("--tspan_end", type=str, help="End date of the time span (YYYY-MM-DD).")
 parser.add_argument("--product", type=str, help="product: harp2_fastmapol, ...")
+parser.add_argument("--header", type=str, help="any string", default='v3.0')
+parser.add_argument("--l2str", type=str, help="any string to identify the l2 files", default='L2')
 parser.add_argument("--aod_min_default", type=float, default=None, \
                     help="set aod_min, if not set, use existing values")
 parser.add_argument("--aod_min_plot_default", type=float, default=None, \
                     help="set aod_min_plot, if not set, use existing values")
+parser.add_argument("--aod_max_plot_default", type=float, default=1.0, \
+                    help="set aod_max, if not set, use existing values")
 parser.add_argument("--npixel_min_default", type=float, default=None, \
                     help="set npixel_min, if not set, use existing values")
 parser.add_argument("--destination_folder", type=str, default="/mnt/mfs/FILESHARE/meng_gao/rapid_pace/html/",\
                     help="where to save the html")
 parser.add_argument("--no_rm", action="store_true",
                        help="Do NOT remove files after finish (default: remove files)")
+parser.add_argument("--do_not_ask_ai", action="store_true",
+                       help="no ai if on")
 parser.add_argument("--no_cloud", action="store_true",
                        help="Do NOT use Earthdata cloud (default: use cloud)")
 parser.add_argument("--plot_filter", action="store_true",
                        help="default plot everything, when specified plot filtered values")
+parser.add_argument("--input_data_path", type=str, default=None,\
+                    help="if the data is already downloaded")
+
 
 args = parser.parse_args()
 
 product = args.product
+header = args.header
+l2str = args.l2str
 
 timestamp = args.timestamp
 
@@ -119,6 +130,7 @@ aod_min_default = args.aod_min_default
 aod_min_plot_default = args.aod_min_plot_default
 npixel_min_default = args.npixel_min_default
 destination_folder = args.destination_folder
+input_data_path = args.input_data_path
 os.makedirs(destination_folder, exist_ok=True)
 
 print("product=", product)
@@ -179,6 +191,8 @@ elif(product=='spexone_remotap'):
     criteria = (None, None, 5.0)
     nv_max = 170
 
+outputfile_header = outputfile_header + header+'_'
+
 print("dict1:", dict1)
 aod_min, aod_min_plot, npixel_min = set_default_values(dict1)
 print("aod_min, aod_min_plot, npixel_min", aod_min, aod_min_plot, npixel_min)
@@ -192,6 +206,9 @@ flag_earthdata_cloud = not args.no_cloud  # True by default, False if --no_cloud
 flag_plot_filter = args.plot_filter
 print("flag_plot_filter:", flag_plot_filter)
 
+flag_ask_ai = not args.do_not_ask_ai
+print("ask ai:", flag_ask_ai)
+
 if(flag_earthdata_cloud):
     auth = earthaccess.login(persist=True)
 
@@ -203,6 +220,7 @@ if timestamp:
 else:
     day1 = tspan[0]+'_'+tspan[1]
 
+#given path is not there
 try:
     #refined
     print("search refined data")
@@ -214,7 +232,8 @@ try:
     suite2 = product_info_refined["suite2"]
     filelist_name=sensor+'_'+suite2+'_'+day1+'_filelist.txt'
 
-    data_path, l1c_path, plot_path, html_path = setup_data(tspan, sensor=sensor, suite=suite2)
+    data_path, l1c_path, plot_path, html_path = setup_data(tspan, sensor=sensor, suite=suite2, header=header)
+    print("****where data is", data_path)
     if(flag_earthdata_cloud):
         filelist_l2 = download_l2_cloud(tspan, short_name=short_name, output_folder=data_path)
     else:
@@ -234,7 +253,9 @@ if(len(filelist_l2)==0):
         suite1 =product_info_nrt["suite1"]
         suite2 = product_info_nrt["suite2"]
         filelist_name=sensor+'_'+suite2+'_'+day1+'_filelist.txt'
-        data_path, l1c_path, plot_path, html_path = setup_data(tspan, sensor=sensor, suite=suite2)
+        data_path, l1c_path, plot_path, html_path = setup_data(tspan, sensor=sensor, suite=suite2, header=header)
+        print("****where data is", data_path)
+        
         if(flag_earthdata_cloud):
             filelist_l2 = download_l2_cloud(tspan, short_name=short_name, output_folder=data_path)
         else:
@@ -247,6 +268,17 @@ if(len(filelist_l2)==0):
     
 print("found:", short_name)
 
+#if a path is given
+if(input_data_path!=None and input_data_path.lower()!='none'):
+    data_path = input_data_path
+    print("input_data_path:", input_data_path)
+    print("overwrite data_path by input_data_path")
+else:
+    print("use default data path:", data_path)
+
+print("data_path, if data need download:", data_path)
+print("input_data_path, if data is already available:", input_data_path)
+
 nfile = len(filelist_l2)
     
 if nfile == 0:
@@ -256,10 +288,14 @@ if nfile == 0:
 else:
     print(f"****Successfully downloaded {nfile} new files")
 
+print("path to check:", data_path+f'/*{l2str}*.nc')
+
 try:
     print("check existing folder")
-    filelist_l2 = glob.glob(data_path+'/*.nc')
+    filelist_l2 = glob.glob(data_path+f'/*{l2str}*.nc')
     nfile = len(filelist_l2)
+    print(f"*****list all the l2 files in {data_path} *****")
+    print(filelist_l2)
     print("total file before selection in existing folder", nfile)
 except:
     print("cannot check existing folder")
@@ -272,30 +308,63 @@ nfile = len(filev2)
 print("total file after selection", nfile)
 
 
-key1v = ['aot', 'ssa', 'fvf', 'sph']
-vmin1v = [0, 0.7, 0, 0]
-vmax1v = [1, 1, 1, 1]
-cmap1v = ['YlOrRd', 'jet', 'jet', 'jet']
+#key1v = ['aot', 'ssa', 'fvf', 'sph']
+#vmin1v = [0, 0.7, 0, 0]
+#vmax1v = [0.5, 1, 1, 1]
+#cmap1v = ['YlOrRd', 'jet', 'jet', 'jet']
 
-key1v = ['aot', 'ssa', 'fvf', 'sph', 'chi2', 'nv_ref', 'nv_dolp']
-vmin1v = [0, 0.7, 0, 0, 0, 0, 0]
-vmax1v = [0.5, 1, 1, 1, 5, 170, 170]
-cmap1v = ['YlOrRd', 'jet', 'jet', 'jet', 'jet', 'jet', 'jet']
+#key1v = ['aot', 'ssa', 'fvf', 'sph', 'chi2', 'nv_ref', 'nv_dolp']
+#vmin1v = [0, 0.7, 0, 0, 0, 0, 0]
+#vmax1v = [0.5, 1, 1, 1, 5, 170, 170]
+#cmap1v = ['YlOrRd', 'jet', 'jet', 'jet', 'jet', 'jet', 'jet']
 
-dict1v= {'aot':[[0, 1],'YlOrRd','linear'] , \
-         'ssa':[[0.7, 1], 'jet','linear'], 'fvf':[[0, 1], 'jet','linear'], 'sph':[[0,1], 'jet','linear'], \
-         'aot_fine':[[0,1], 'YlOrRd','linear'], 'aot_coarse':[[0,1], 'YlOrRd','linear'], 'angstrom_440_670':[[-1,2], 'jet','linear'], \
-         'alh':[[0,6], 'jet','linear'], 'mr':[[1.3,1.65], 'jet','linear'], 'mi':[[0,0.03], 'jet','linear'], \
-          'wind_speed': [[0, 10], 'jet','linear'], 'chla':[[-2,1], 'jet','log10'],\
-          'Rrs2_mean':[[0,0.02], 'jet','linear'], 'Rrs2_std':[[0,0.02], 'jet','linear'],\
-          'chi2':[[0,5], 'jet','linear'], 'nv_ref':[[0,nv_max], 'jet','linear'], \
-          'nv_dolp':[[0,nv_max], 'jet','linear'],'quality_flag':[[0,5], 'jet','linear']}
+
+aot_max = args.aod_max_plot_default #default 1.0
+#aot_max = 0.5
+#aot_max = 1.0
+dict1v= {'ozone':[[150, 450], 'jet','linear'], 'surface_pressure':[[500,1100],'jet','linear'],\
+         'height':[[0,4000], 'jet','linear'],\
+         'aot':[[0, aot_max],'YlOrRd','linear'] , \
+         'ssa':[[0.7, 1], 'RdBu','linear'], \
+         'fvf':[[0, 1], 'jet','linear'], \
+         'sph':[[0,1], 'jet','linear'], 'sph_fine':[[0,1], 'jet','linear'], 'sph_coarse':[[0,1], 'jet','linear'],\
+         'aot_fine':[[0,aot_max], 'YlOrRd','linear'], 'aot_coarse':[[0,aot_max], 'YlOrRd','linear'], \
+         'angstrom_440_670':[[-1,2], 'jet','linear'], \
+         'alh':[[0,15], 'jet','linear'], \
+          'mr':[[1.3,1.65], 'jet','linear'], 'mi':[[0,0.03], 'jet','linear'], \
+          'mr_fine':[[1.3,1.65], 'jet','linear'], 'mi_fine':[[0,0.03], 'jet','linear'], \
+          'mr_coarse':[[1.3,1.65], 'jet','linear'], 'mi_coarse':[[0,0.03], 'jet','linear'], \
+          'aerosol_lidar_ratio':[[0,100], 'jet','linear'], 'aerosol_depol_ratio':[[0,0.2], 'jet','linear'],\
+          'wind_speed': [[0, 20], 'jet','linear'], \
+           'wind_speed': [[0, 6], 'jet','linear'],  
+           'chla':[[-2,1], 'jet','log10'],\
+          'Rrs1_mean':[[0,0.02], 'jet','linear'], 'Rrs1':[[0,0.02], 'jet','linear'],\
+          'Rrs2_mean':[[0,0.02], 'jet','linear'], 'Rrs2':[[0,0.02], 'jet','linear'],\
+          'Rrs_angular_mean':[[0,0.02], 'jet','linear'], 'Rrs_angular_std':[[0,0.02], 'jet','linear'],\
+          'Rrs_nadir_mean':[[0,0.02], 'jet','linear'], 'Rrs_nadir_std':[[0,0.02], 'jet','linear'],\
+          'rhos_angular_mean':[[0,1], 'jet','linear'], 'rhos_angular_std':[[0,1], 'jet','linear'],\
+          'rhos_nadir_mean':[[0,1], 'jet','linear'], 'rhos_nadir_std':[[0,1], 'jet','linear'],\
+          'chi2':[[0,5], 'jet','linear'], 'timing':[[0, 2],'jet','linear'], \
+          'nv_ref':[[0,nv_max], 'jet','linear'], \
+          'nv_rho':[[0,nv_max], 'jet','linear'], \
+          'nv_dolp':[[0,nv_max], 'jet','linear'],'quality_flag':[[0,5], 'jet','linear'],\
+          'land_fiso':[[0,1], 'jet', 'linear'],
+          'land_kvol':[[0,1.5], 'jet', 'linear'],'land_kgeo':[[0,0.35], 'jet', 'linear'],
+          'land_fvol':[[0,1.5], 'jet', 'linear'],'land_fgeo':[[0,0.35], 'jet', 'linear'],
+          'land_bpol':[[0,10], 'jet', 'linear'],
+          'land_white_sky_albedo':[[0,1], 'jet', 'linear']}
+
+#set it to empty
+dict1v = {}
+
+#still keep Rrs1 and Rrs2 and ref, for old files
 
 key1v = list(dict1v.keys())
 vmin1v = [dict1v[key][0][0] for key in key1v]
 vmax1v = [dict1v[key][0][1] for key in key1v]
 cmap1v = [dict1v[key][1] for key in key1v]
 scale1v = [dict1v[key][2] for key in key1v]
+
 
 print("key1v =", key1v)
 print("vmin1v =", vmin1v)
@@ -324,9 +393,13 @@ infov, infov_dict = make_plot(filev2, plot_path, l1c_path, \
 
 print(infov_dict)
 
-base_url="https://llm-api-access.caio.mcp.nasa.gov"
-message1v, message2v = ask_ai_all(infov_dict, api_key, base_url)
-print(message1v)
+if(flag_ask_ai):
+    base_url="https://llm-api-access.caio.mcp.nasa.gov"
+    message1v, message2v = ask_ai_all(infov_dict, api_key, base_url)
+    print(message1v)
+else:
+    message1v=None
+    message2v=None
 
 #text_box = message2v
 text_box = None
@@ -343,27 +416,55 @@ sequence = [['globe', 'rgb', 'aot', ], ['ssa', 'fvf', 'sph']]
 titlev_custom = [["", "", "AOD (550nm)"], ["Single Scattering Albedo (550nm)", 
                                            "Fine Mode Volume Fraction", "Spherical Fraction"]]
 
-sequence = [['globe', 'rgb', 'aot', ], ['ssa', 'fvf', 'sph'], ['chi2', 'nv_ref', 'nv_dolp']]
+sequence = [['globe', 'rgb', 'aot', ], \
+            ['ssa', 'fvf', 'sph'], \
+            ['chi2', 'nv_ref', 'nv_rho', 'nv_dolp']]
 titlev_custom = [["", "", "AOD (550nm)"], \
                  ["Single Scattering Albedo (550nm)", "Fine Mode Volume Fraction", "Spherical Fraction"],\
-                 ["Cost Function (chi2)", "Total Valid Reflectance (nv_ref)", "Total Valid DoLP (nv_dolp)"]]
+                 ["Cost Function (chi2)", "Total Valid Reflectance (nv_ref)", "Total Valid Reflectance (nv_rho)", "Total Valid DoLP (nv_dolp)"]]
 
 #'text_box', 'globe', 'rgb'
 sequence = [['globe', 'rgb', 'dolp'], \
             ['aot', 'ssa', 'fvf'], \
             ['aot_fine', 'aot_coarse', 'angstrom_440_670'],\
-            ['sph','alh', 'mr', 'mi'], \
-            ['wind_speed', 'chla','Rrs2_mean', 'Rrs2_std'],\
-            ['chi2','nv_ref', 'nv_dolp', 'quality_flag']
+            ['sph', 'sph_fine', 'sph_coarse'],\
+            ['alh', 'aerosol_lidar_ratio', 'aerosol_depol_ratio'], \
+            ['mr', 'mr_fine', 'mr_coarse', 'mi', 'mi_fine', 'mi_coarse'], \
+            ['wind_speed', 'chla'],\
+            ['Rrs1_mean', 'Rrs2_mean', 'Rrs1_std', 'Rrs2_std'],\
+            ['Rrs_angular_mean', 'Rrs_nadir_mean', 'Rrs_angular_std', 'Rrs_nadir_std'],\
+            ['rhos_angular_mean', 'rhos_nadir_mean', 'rhos_angular_std', 'rhos_nadir_std'],\
+            ['chi2','nv_ref','nv_rho', 'nv_dolp', 'quality_flag', 'timing'],\
+            ['ozone','surface_pressure', 'height'],\
+            ['land_fiso', 'land_kvol', 'land_kgeo', 'land_fvol', 'land_fgeo', 'land_bpol', 'land_white_sky_albedo'],\
+            ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+            ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
             ]
 
 titlev_custom = [["", "Reflectance", "DoLP"], \
                  ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Volume Fraction"],\
-                 ['aot_fine', 'aot_coarse', 'angstrom_440_670'],\
-                 ["Spherical Fraction", "Aerosol Layer height", "Total refractive index(Real)", "Total refractive index(Imag)"],\
-                 ["Wind speed", "Log10(Chla)", "Anguar Mean of Rrs2", "Angular STD of Rrs2"], \
-                 ["Cost Function (chi2)", "Total Valid Reflectance (nv_ref)", "Total Valid DoLP (nv_dolp)","Quality Flag"]]
-
+                 ['AOD (fine)', 'AOD (coarse)', 'Angstrom(440/670)'],\
+                 ["Total Spherical Fraction", "Fine Spherical Fraction", "Coarse Spherical Fraction"], \
+                  ["Aerosol Layer height",'Aerosol lidar ratio', 'Aerosol depol ratio'],\
+                 ["Total refractive index(Real)", "Fine refractive index(Real)", "Coarse refractive index(Real)", "Total refractive index(Imag)", "Fine refractive index(Imag)", "Coarse refractive index(Imag)"],\
+                 ["Wind speed", "Log10(Chla)"], \
+                 ["Anguar Mean of Rrs_angular", "Anguar Mean of Rrs_nadir", "Angular STD of Rrs_angular", "Angular STD of Rrs_nadir"], \
+                 ["Anguar Mean of Rrs_angular", "Anguar Mean of Rrs_nadir", "Angular STD of Rrs_angular", "Angular STD of Rrs_nadir"], \
+                 ["Anguar Mean of rhos_angular", "Anguar Mean of rhos_nadir", "Angular STD of rhos_angular", "Angular STD of rhos_nadir"], \
+                 ["Cost Function (chi2)", "Total Valid Reflectance (nv_ref)", "Total Valid Reflectance (nv_rho)", "Total Valid DoLP (nv_dolp)","Quality Flag", "Timing"],\
+                 ["Ozone", "Surface Pressure", "Terrain Height (m)"],\
+                ['land_fiso', 'land_kvol', 'land_kgeo', 'land_fvol', 'land_fgeo', 'land_bpol', 'land_white_sky_albedo'],\
+                ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+                ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
+                ]
+sequence = [['globe', 'rgb', 'dolp'], \
+            #['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+            ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
+            ]
+titlev_custom = [["", "Reflectance", "DoLP"], \
+                #['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+                ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
+                ]
 
 #title = f"{sensor} {suite2} Rapid Data Live View ({tspan[0]})"
 title = format_simple_title(sensor, suite2, tspan)

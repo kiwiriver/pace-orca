@@ -60,20 +60,20 @@ def set_default_values(dict1):
 
     return aod_min, aod_min_plot, npixel_min
 
-def setup_data(tspan, sensor='PACE_HARP2', suite='MAPOL_OCEAN.V3.0', path1='./pace_tmp/'):
+def setup_data(tspan, sensor='PACE_HARP2', suite='MAPOL_OCEAN.V3.0', path1='./pace_tmp/', header=''):
     """
     setup folders, and download l2 data
     tspan: time range
     """
     day1 = tspan[0]+'_'+tspan[1]
     ## cannot change, default for download tool
-    l2_path = os.path.join(path1,'data_l2',sensor+'_'+suite+'_'+day1)
+    l2_path = os.path.join(path1,'data_l2',sensor+'_'+suite+'_'+day1+header)
     os.makedirs(l2_path, exist_ok=True)
 
-    l1c_path = os.path.join(path1,'data_l1c',sensor+'_'+suite+'_'+day1)
+    l1c_path = os.path.join(path1,'data_l1c',sensor+'_'+suite+'_'+day1+header)
     os.makedirs(l1c_path, exist_ok=True)
 
-    plot_path = os.path.join(path1,'plot',sensor+'_'+suite+'_'+day1)
+    plot_path = os.path.join(path1,'plot',sensor+'_'+suite+'_'+day1+header)
     os.makedirs(plot_path, exist_ok=True)
 
     html_path = os.path.join(path1,'html')

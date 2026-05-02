@@ -428,7 +428,8 @@ def generate_gallery_header(title, title2=None, logo_path=None, resolution_facto
     
 def create_html_from_subfolders(image_groups, output_html, sequence, global_map=None,
                                 title="Combined Image Gallery", title2=None,
-                                titlev=None, resolution_factor=1, quality=85, message1v=None, message2v=None,
+                                titlev=None, resolution_factor=1, quality=85, \
+                                message1v=None, message2v=None,
                                 url_base="http://oceandata.sci.gsfc.nasa.gov/getfile/",
                                 sensor="PACE_HARP2", suite="L2.MAPOL_OCEAN.V3_0",
                                 hide_after_key='sph', infov_dict=None, text_box=None, logo_path=None):

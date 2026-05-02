@@ -44,7 +44,9 @@ def make_plot(filev2, plot_path, l1c_path="./data/", \
               vmax1v = [1, 1, 1, 1],
               cmap1v = ['YlOrRd', 'jet', 'jet', 'jet'],
               scale1v = ['linear', 'linear', 'linear', 'linear'],
-              flag_plot_filter=False
+              flag_plot_filter=False,
+              rgb_keys=['Rrs_angular_mean', 'Rrs_nadir_mean', 'Rrs_angular_std', 'Rrs_nadir_std',\
+                        'rhos_angular_mean', 'rhos_nadir_mean', 'rhos_angular_std', 'rhos_nadir_std']
              ):
     """generate plots according to filev2
 
@@ -63,7 +65,7 @@ def make_plot(filev2, plot_path, l1c_path="./data/", \
                 l1c_path=l1c_path, flag_earthdata_cloud=flag_earthdata_cloud, aod_min_plot=aod_min_plot,\
                 sensor=sensor, suite1=suite1, suite2=suite2, criteria=criteria,\
                 key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v, cmap1v=cmap1v,scale1v=scale1v,\
-                           flag_plot_filter=flag_plot_filter)
+                           flag_plot_filter=flag_plot_filter, rgb_keys=rgb_keys)
         infov.append(info)
         #except:
         #    print('failed to make plot', file1)
@@ -111,7 +113,9 @@ def plot_l1c_l2(file1, plot_path, \
                 aod_min_plot = None,
                 sensor="PACE_HARP2",suite1="L1C",suite2="L2",
                 criteria = (30, 20, 2.0),
-                flag_plot_filter=False
+                flag_plot_filter=False,
+                rgb_keys=[],
+                iwvv_rgb=[2,1,0],
                 ):
     """
     file1: L2 data file
@@ -128,6 +132,9 @@ def plot_l1c_l2(file1, plot_path, \
     spexone: l1c: iwvv=[290, 170, 60], iv=2
     harp2 rgb at nadir: iwvv=0, iv=[40, 5, 85], iangle=0
 
+    iwvv_rgb=[2,1,0] for harp2, 
+    iwv_rgb=[xxx] for spexone need adjustment
+    
     iwv_rrs: for the plot of rrs, usually choose 440
     iwv_aod: for all others, and use to select data, usually 440
 
@@ -161,7 +168,7 @@ def plot_l1c_l2(file1, plot_path, \
     
     file4 = filelist_l1c[0]
     print(file4)
-    datatree = xr.open_datatree(file4)
+    datatree = xr.open_datatree(file4,decode_timedelta=False)
     dataset1 = xr.merge(datatree.to_dict().values())
     #############################
 
@@ -192,6 +199,8 @@ def plot_l1c_l2(file1, plot_path, \
     info['boundingbox'] = boundingbox
     info['center'] = center
 
+    #======= plot more l1 data ==========
+    
     #with open("tmp2i.pk", "wb") as f:
     #    pickle.dump([lat2, lon2, tmp2i], f)
     
@@ -199,35 +208,62 @@ def plot_l1c_l2(file1, plot_path, \
     title = f"{sensor} {suite2}+@{timestamp3}"
     fileout= plot_path2+sensor+suite2+'_'+timestamp3+'_rgb.png'
     print(fileout)
-    plot_rgb(lon2, lat2, tmp2i, None, figsize = (10, 5),\
+    print("tmp2i shape, min, max:", tmp2i.shape, np.nanmin(tmp2i), np.nanmax(tmp2i))
+    plot_rgb(lon2, lat2, tmp2i, None, plot_type='i', figsize = (10, 5),\
             title=title, fileout=fileout,)
 
     #plot l1 rgb in dolp
     title = f"{sensor} {suite2}+@{timestamp3}"
     fileout= plot_path2+sensor+suite2+'_'+timestamp3+'_dolp.png'
     print(fileout)
-    
-    plot_rgb(lon2, lat2, tmp2dolp, None, flag_dolp=True, figsize = (10, 5),\
+    print("tmp2dolp shape, min, max:", tmp2dolp.shape, np.nanmin(tmp2dolp), np.nanmax(tmp2dolp))
+    plot_rgb(lon2, lat2, tmp2dolp, None, plot_type='dolp', figsize = (10, 5),\
             title=title, fileout=fileout,)
-
-    #plot l2 data
+    
+    #======= plot l2 data ===============
     #file1: l2 data file, aod_min_plot for data selection
 
-    
     npixel_valid0, npixel_valid1,filter1 = filter_data(file1, iwv550=iwv_aod, aot_min=aod_min_plot, criteria=criteria)
 
+    #plot rgb of surface reflectance
+    for i1, key1 in enumerate(rgb_keys):
+        key2='rgb_'+key1
+        try:
+            if('rhos' in key1.lower()):
+                plot_type='rhos'
+            elif('rrs' in key1.lower())
+                plot_type='rrs'
+            
+            tmp3 = dataset2[key1][:, :, iwvv_rgb].values 
+            print(f"{key1} shape in rgb, min, max:", tmp3.shape, np.nanmin(tmp3), np.nanmax(tmp3))
+            
+            title = f"{sensor} {suite2}+@{timestamp3}:{key2}"
+            fileout= plot_path2+sensor+suite2+'_'+timestamp3+f'_{key2}.png'
+            plot_rgb(lon2, lat2, tmp3, None,plot_type=plot_type, figsize = (10, 5),\
+                title=title, fileout=fileout,)
+        except:
+            print(f"cannot plot {key1} in rgb")
     
-    for i1, key1 in enumerate(key1v):
+    for i1, key1 in enumerate(key1v):        
         try:
             if('rrs' in key1.lower()):
                 iwv_plot=iwv_rrs
             else:
                 iwv_plot=iwv_aod
-    
-            try:
-                tmp3 = dataset2[key1].values[:,:, iwv_plot]
-            except:
-                tmp3 = dataset2[key1].values[:,:]
+
+            if key1 in dataset1:
+                #l1c
+                tmp3=get_slice_if_exists(dataset1, key1, iwv_plot)
+            elif key1 in dataset2:
+                #l2
+                tmp3=get_slice_if_exists(dataset2, key1, iwv_plot)
+            else:
+                tmp3=None
+            
+            #try:
+            #    tmp3 = dataset2[key1].values[:,:, iwv_plot]
+            #except:
+            #    tmp3 = dataset2[key1].values[:,:]
     
             if(scale1v[i1]=='log10'):
                 #plot in log scale
@@ -284,7 +320,8 @@ def plot_l1c_l2(file1, plot_path, \
                     vmin2, vmax2=0, 170
                 else:
                     vmin2, vmax2 = vmin1v[i1], vmax1v[i1]
-                
+
+            print("key1 min, max:", np.nanmin(tmp3), np.nanmax(tmp3))
             plot_rgb(lon2, lat2, tmp2i, tmp3, figsize = (10, 5), \
                      vmin1=vmin2, vmax1=vmax2 , cmap=cmap1v[i1], \
                      title=title, fileout=fileout, cbar_label=cbar_label)
@@ -293,7 +330,17 @@ def plot_l1c_l2(file1, plot_path, \
         
     #timestamp3, boundingbox, center
     return info
-        
+
+def get_slice_if_exists(dataset, key, iwv_plot):
+    """get data from dataset"""
+    var = dataset[key]
+
+    # Handle with or without wavelength dimension
+    if var.ndim >= 3:
+        return var.values[:, :, iwv_plot]
+    else:
+        return var.values[:, :]
+
 def plot_l2_product(lat, lon, data, plot_range, label, title, vmin, vmax, figsize=(12, 4), cmap="viridis"):
     """Make map and histogram (default)."""
 
@@ -331,8 +378,9 @@ def plot_l2_product(lat, lon, data, plot_range, label, title, vmin, vmax, figsiz
 def reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.5, bias=-0.1):
     tmp2 = (tmp2*scale1)**scale2
     tmp2=tmp2+bias
-    tmp2[tmp2<0]=0.0
-    tmp2[tmp2>0.99] = 0.99
+    #tmp2[tmp2<0]=0.0
+    #tmp2[tmp2>0.99] = 0.99
+    tmp2 = np.clip(tmp2, 0, 1)
     return tmp2
 
 def reset_lon(i, tmp2, lon2):
@@ -357,7 +405,7 @@ def reset_lon(i, tmp2, lon2):
     return tmp2t
 
             
-def plot_rgb(lon2, lat2, tmp2, tmp3, flag_dolp=False, figsize = (10, 5), \
+def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
             vmin1=0, vmax1=1.0, cmap='YlOrRd', title=None, fileout=None, \
              cbar_label=None, cbar_label_fontsize=14):
     """
@@ -374,10 +422,18 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, flag_dolp=False, figsize = (10, 5), \
     
     ################################
     ### plot rgb ###################
-    if(not flag_dolp):
-        tmp2 = reset_data_for_rgb(tmp2)
-    else:
+    if(plot_type=='i'):
+        #tmp2 = reset_data_for_rgb(tmp2, scale1=1/200, scale2=0.4, bias=-0.1)
+        tmp2 = reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.3, bias=0)
+    elif(plot_type='dolp'):
         tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
+        #tmp2 = reset_data_for_rgb(tmp2, scale1=1/2, scale2=0.3, bias=0)
+    elif(plot_type='rhos'):
+        tmp2 = reset_data_for_rgb(tmp2, scale1=1, scale2=0.5, bias=0)
+    elif(plot_type='rrs'):
+        tmp2 = reset_data_for_rgb(tmp2, scale1=10, scale2=0.5, bias=0)
+    else:
+        tmp2 = reset_data_for_rgb(tmp2, scale1=1, scale2=0.5, bias=0)
 
     plot_crossdateline_rgb(ax, lon2, lat2, tmp2)
     #plt.pcolormesh(lon2, lat2, tmp2,transform=ccrs.PlateCarree())
@@ -428,7 +484,8 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, flag_dolp=False, figsize = (10, 5), \
 
     if(fileout):
         plt.savefig(fileout, dpi=400, bbox_inches='tight', pad_inches=0.1)
-    #plt.show()
+    
+    plt.close(fig)
 
 def plot_crossdateline_extent(lon2, lat2):
     """
