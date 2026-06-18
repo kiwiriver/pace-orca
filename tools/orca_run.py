@@ -355,7 +355,7 @@ dict1v= {'ozone':[[150, 450], 'jet','linear'], 'surface_pressure':[[500,1100],'j
           'land_white_sky_albedo':[[0,1], 'jet', 'linear']}
 
 #set it to empty
-dict1v = {}
+#dict1v = {}
 
 #still keep Rrs1 and Rrs2 and ref, for old files
 
@@ -457,14 +457,14 @@ titlev_custom = [["", "Reflectance", "DoLP"], \
                 ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
                 ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
                 ]
-sequence = [['globe', 'rgb', 'dolp'], \
-            #['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
-            ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
-            ]
-titlev_custom = [["", "Reflectance", "DoLP"], \
-                #['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
-                ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
-                ]
+#sequence = [['globe', 'rgb', 'dolp'], \
+#            ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+#            ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
+#            ]
+#titlev_custom = [["", "Reflectance", "DoLP"], \
+#                ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+#                ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
+#                ]
 
 #title = f"{sensor} {suite2} Rapid Data Live View ({tspan[0]})"
 title = format_simple_title(sensor, suite2, tspan)

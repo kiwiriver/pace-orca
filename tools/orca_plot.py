@@ -61,7 +61,8 @@ def make_plot(filev2, plot_path, l1c_path="./data/", \
     infov = []
     for file1 in filev2[:]:
         #try:
-        info = plot_l1c_l2(file1, plot_path, iwvv=iwvv,iv=iv, iwvvp=iwvvp,ivp=ivp, iwv_aod=iwv_aod, iwv_rrs=iwv_rrs,\
+        info = plot_l1c_l2(file1, plot_path, iwvv=iwvv,iv=iv, iwvvp=iwvvp,ivp=ivp, \
+                           iwv_aod=iwv_aod, iwv_rrs=iwv_rrs,\
                 l1c_path=l1c_path, flag_earthdata_cloud=flag_earthdata_cloud, aod_min_plot=aod_min_plot,\
                 sensor=sensor, suite1=suite1, suite2=suite2, criteria=criteria,\
                 key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v, cmap1v=cmap1v,scale1v=scale1v,\
@@ -180,7 +181,10 @@ def plot_l1c_l2(file1, plot_path, \
         tmp2i = dataset1.i[:, :, iv, iwvv].values
     else:
         tmp2i = np.full_like(lon2, None, dtype=object)
-    
+
+    #make rp
+
+    #dolp data
     if (ivp is not None) and (iwvvp is not None):
         tmp2dolp = dataset1.dolp[:, :, ivp, iwvvp].values
     else:
@@ -229,10 +233,14 @@ def plot_l1c_l2(file1, plot_path, \
     for i1, key1 in enumerate(rgb_keys):
         key2='rgb_'+key1
         try:
-            if('rhos' in key1.lower()):
-                plot_type='rhos'
-            elif('rrs' in key1.lower())
-                plot_type='rrs'
+            if('rhos' in key1.lower() and 'mean' in key1.lower()):
+                plot_type='rhos_mean'
+            elif('rhos' in key1.lower() and 'std' in key1.lower()):
+                plot_type='rhos_std'
+            elif('rrs' in key1.lower() and 'mean' in key1.lower()):
+                plot_type='rrs_mean'
+            elif('rrs' in key1.lower() and 'std' in key1.lower()):
+                plot_type='rrs_std'
             
             tmp3 = dataset2[key1][:, :, iwvv_rgb].values 
             print(f"{key1} shape in rgb, min, max:", tmp3.shape, np.nanmin(tmp3), np.nanmax(tmp3))
@@ -356,8 +364,8 @@ def plot_l2_product(lat, lon, data, plot_range, label, title, vmin, vmax, figsiz
 
     # Assume lon and lat are defined globally or passed in
     pm = ax_map.pcolormesh(
-        lon, lat, data, vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), cmap=cmap
-    )
+        lon, lat, data, vmin=vmin, vmax=vmax, \
+        transform=ccrs.PlateCarree(), cmap=cmap, shading="nearest")
     plt.colorbar(pm, ax=ax_map, orientation="vertical", pad=0.1, label=label)
     ax_map.set_title(title, fontsize=12)
 
@@ -422,20 +430,24 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
     
     ################################
     ### plot rgb ###################
-    if(plot_type=='i'):
+    if(plot_type in ['i', 'rp']):
         #tmp2 = reset_data_for_rgb(tmp2, scale1=1/200, scale2=0.4, bias=-0.1)
         tmp2 = reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.3, bias=0)
-    elif(plot_type='dolp'):
+    elif(plot_type=='dolp'):
         tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
         #tmp2 = reset_data_for_rgb(tmp2, scale1=1/2, scale2=0.3, bias=0)
-    elif(plot_type='rhos'):
-        tmp2 = reset_data_for_rgb(tmp2, scale1=1, scale2=0.5, bias=0)
-    elif(plot_type='rrs'):
+    elif(plot_type=='rhos_mean'):
+        tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
+    elif(plot_type=='rrs_mean'):
         tmp2 = reset_data_for_rgb(tmp2, scale1=10, scale2=0.5, bias=0)
+    elif(plot_type=='rhos_std'):
+        tmp2 = reset_data_for_rgb(tmp2, scale1=2*5, scale2=0.5, bias=0)
+    elif(plot_type=='rrs_std'):
+        tmp2 = reset_data_for_rgb(tmp2, scale1=10*5, scale2=0.5, bias=0)
     else:
         tmp2 = reset_data_for_rgb(tmp2, scale1=1, scale2=0.5, bias=0)
 
-    plot_crossdateline_rgb(ax, lon2, lat2, tmp2)
+    plot_crossdateline_rgb(ax, lon2, lat2, tmp2, transform=proj)
     #plt.pcolormesh(lon2, lat2, tmp2,transform=ccrs.PlateCarree())
 
     ################################
@@ -456,7 +468,8 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
 
         plot_crossdateline_scalar(ax, lon2, lat2, tmp3, cmap=cmap, levels=levels,\
                                ticks=ticks, tick_labels=tick_labels, \
-                               cbar_label=cbar_label, cbar_label_fontsize=cbar_label_fontsize)
+                               cbar_label=cbar_label, cbar_label_fontsize=cbar_label_fontsize,
+                               transform=proj)
     except:
         pass
     
@@ -464,7 +477,7 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
     xbin=5
     ybin=5
     alpha=0.3
-    
+
     gl=ax.gridlines(linewidth=0.5, color='gray', alpha=0.3, linestyle='-')
     cl=ax.coastlines(resolution='50m', color='k', linewidth=0.1) #10m, 110m
     ax.add_feature(cartopy.feature.OCEAN, edgecolor='w',linewidth=0.01)
@@ -524,7 +537,7 @@ def plot_crossdateline_extent(lon2, lat2):
 
     return extent, projection, flag_crossdateline
 
-def plot_crossdateline_rgb(ax, lon2, lat2, rgb_array):
+def plot_crossdateline_rgb(ax, lon2, lat2, rgb_array, transform=ccrs.PlateCarree()):
     """
     Plot RGB(A) image data that may cross the dateline using Cartopy.
     Works even if longitude coordinates are not equally spaced.
@@ -573,19 +586,20 @@ def plot_crossdateline_rgb(ax, lon2, lat2, rgb_array):
             
             # Plot this hemisphere - lon and lat remain unchanged
             ax.pcolormesh(lon2_wrapped, lat2, rgb_masked, 
-                          transform=ccrs.PlateCarree())
+                          transform=transform,shading="nearest")
             
             print(f"  - Plotting hemisphere {i} ({'WEST' if i == 0 else 'EAST'})")
     else:
         # --- Simple case (no crossing)
         extent = [lon2.min(), lon2.max(), lat2.min(), lat2.max()]
         ax.pcolormesh(lon2, lat2, rgb_array,
-                transform=ccrs.PlateCarree()
+                transform=transform
             )
 
 def plot_crossdateline_scalar(ax, lon2, lat2, data, cmap='viridis', levels=None,
                               ticks=None, tick_labels=None,
-                              cbar_label=None, cbar_label_fontsize=None):
+                              cbar_label=None, cbar_label_fontsize=None,\
+                             transform=ccrs.PlateCarree()):
     """
     Plot 2D scalar data (e.g., AOD, SST, etc.) that may cross the dateline using Cartopy.
     Works even if longitude coordinates are not equally spaced.
@@ -632,8 +646,8 @@ def plot_crossdateline_scalar(ax, lon2, lat2, data, cmap='viridis', levels=None,
             extent = [np.nanmin(lon_east), np.nanmax(lon_east), lat_min, lat_max]
             mesh_east = ax.pcolormesh(
                 lon_east, lat_east, data_east,
-                transform=ccrs.PlateCarree(),
-                cmap=cmap, vmin=vmin1, vmax=vmax1, shading='auto'
+                transform=transform,
+                cmap=cmap, vmin=vmin1, vmax=vmax1, shading="nearest"
             )
 
         # Plot west side
@@ -644,8 +658,8 @@ def plot_crossdateline_scalar(ax, lon2, lat2, data, cmap='viridis', levels=None,
             extent = [np.nanmin(lon_west), np.nanmax(lon_west), lat_min, lat_max]
             mesh_west = ax.pcolormesh(
                 lon_west, lat_west, data_west,
-                transform=ccrs.PlateCarree(),
-                cmap=cmap, vmin=vmin1, vmax=vmax1, shading='auto'
+                transform=transform,
+                cmap=cmap, vmin=vmin1, vmax=vmax1, shading="nearest"
             )
 
         # Keep one handle for colorbar
@@ -655,8 +669,8 @@ def plot_crossdateline_scalar(ax, lon2, lat2, data, cmap='viridis', levels=None,
         # Normal case (no crossing)
         mesh = ax.pcolormesh(
             lon2, lat2, data,
-            transform=ccrs.PlateCarree(),
-            cmap=cmap, shading='auto'
+            transform=transform,
+            cmap=cmap, shading="nearest"
         )
         mesh.set_clim(vmin1, vmax1)
 
@@ -705,13 +719,13 @@ def plot_crossdateline_data(ax, lon2, lat2, tmp3, cmap='viridis', levels=None, \
         mesh = ax.pcolormesh(
             lon2, lat2, tmp3,
             transform=ccrs.PlateCarree(central_longitude=180),
-            cmap=cmap, vmin=vmin1, vmax=vmax1
+            cmap=cmap, vmin=vmin1, vmax=vmax1, shading="nearest"
         )
     else:
         mesh = ax.pcolormesh(
             lon2, lat2, tmp3,
             transform=ccrs.PlateCarree(),
-            cmap=cmap, vmin=vmin1, vmax=vmax1
+            cmap=cmap, vmin=vmin1, vmax=vmax1, shading="nearest"
         )
         
     if(ticks):

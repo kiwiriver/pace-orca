@@ -72,13 +72,40 @@ echo $l2str
 #l2str: identify the l2 file
 #print("path to check:", data_path+f'/*{l2str}*.nc')
 #########################################################################
-timestamp='20240927T210427'                                                                                                            
-input_data_path='/mnt/mfs/mgao1/develop/fastmapol/test2026/test9_global/data_gitlab/data_hipp4.7/land_v4.2_d1/test/'
-header='hipp4.7_gitlab'
+#timestamp='20240927T210427'                                                                                                            
+#input_data_path='/mnt/mfs/mgao1/develop/fastmapol/test2026/test9_global/data_gitlab/data_hipp4.7/land_v4.2_d1/test/'
+#input_data_path='/mnt/mfs/mgao1/develop/fastmapol/test2026/test9_global/data_gitlab/data_hipp4.7/land_v4.2_d1/'
+timestamp='20240930T024250'
+#austrilia
+input_data_path='/accounts/mgao1/mfs_pace/pace/spotlight/data_tmp_aus/'
+#/mnt/mfs/FILESHARE/meng_gao/pace/spotlight/html/harp2_fastmapol_land_v4.0_20240930T024250_n7_aod0.001_chat5.html
+header='land_v4.0'
 suite1='L2.MAPOL_LAND'
-l2str='V4.3_d1'
+#l2str='V4.0'
+l2str='V4_0'
 l2str=$suite1.$l2str
 echo $l2str 
+
+
+timestamp='20240930T024250'
+#railroad                                                                                                                                    
+input_data_path='/accounts/mgao1/mfs_develop/fastmapol/test2026/test10_v4/land_v4.5_var1/HARP2/railroad/'
+header='land_v4.5'
+suite1='L2.MAPOL_LAND'
+l2str='V4_v4.5_var1_d1'
+l2str=$suite1.$l2str
+echo $l2str
+#/mnt/mfs/FILESHARE/meng_gao/pace/spotlight/html/harp2_fastmapol_land_v4.5_20240930T024250_n2_aod0.001_chat5.html
+
+
+timestamp='20240930T193040'
+#fire
+input_data_path='/accounts/mgao1/mfs_develop/fastmapol/test2026/test10_v4/land_v4.6_var1/HARP2/spot/'
+header='land_v4.6'
+suite1='L2.MAPOL_LAND'
+l2str='V4_v4.6_var1_d1'
+l2str=$suite1.$l2str
+echo $l2str
 
 #########################################################################
 #timestamp='20240927T210427'
@@ -95,10 +122,34 @@ echo $l2str
 #header='hipp4.6_gitlab'$l2str
 #input_data_path='/accounts/mgao1/mfs_develop/fastmapol/test2026/test9_global/data_gitlab/data_hipp4.6_pr1/'
 #header='hipp4.7_gitlab'$l2str
-######################################################################################
 
 tspan_start='None'
 tspan_end='None'
+
+
+
+######################################################################################
+#coco from Carina
+timestamp='20260504T165915'
+#timestamp='20260504T170415'
+#
+#input_data_path='None'
+input_data_path='/accounts/mgao1/mfs_pace/rapid/test/test_coco/'
+
+header='V3_Coco'
+suite1='L2.MAPOL_OCEAN'
+l2str='V'
+l2str=$suite1.$l2str
+#l2str=$suite1
+
+#tspan_start='2026-05-04'
+#tspan_end='2026-05-04'
+
+
+##############################################################################
+
+#tspan_start='None'
+#tspan_end='None'
 
 #set time span
 #timestamp="None"
@@ -136,8 +187,10 @@ python $pyfile --timestamp "$timestamp" --tspan_start "$tspan_start" --tspan_end
        --product "$product" --header "$header" --l2str "$l2str"\
 	--aod_min_default $aod_min_default  --aod_min_plot_default $aod_min_plot_default --aod_max_plot_default $aod_max_plot_default \
 	--npixel_min_default $npixel_min_default --input_data_path "$input_data_path" \
-	--destination_folder "$destination_folder" --no_cloud --plot_filter --no_rm \
-        --do_not_ask_ai
+	--destination_folder "$destination_folder" --no_cloud --plot_filter --no_rm
+
+
+        #--do_not_ask_ai
 
 #if keep the l1c and l2 file set -no_rm
 #if download data from oel data server, not earthdata cloud set --no_cloud
