@@ -135,7 +135,28 @@ os.makedirs(destination_folder, exist_ok=True)
 
 print("product=", product)
 #load correct information for that product
-outputfile_header, product_info_nrt, product_info_refined = get_pace_data_info(product)
+#default v3 ocean
+#L2.MAPOL_OCEAN.V3.0, L2.MAPOL_LAND.V4_0
+
+l1c_version, l2_version, surface = parse_l2str(l2str)
+
+print("l1c_version:", l1c_version)  # v4
+print("l2_version:", l2_version)   # v4.0
+print("surface:", surface)      # land
+
+outputfile_header, product_info_nrt, product_info_refined = get_pace_data_info(
+    product,
+    l1c_version=str(l1c_version),
+    l2_version=str(l2_version),
+    surface=str(surface),
+)
+
+#old v3 data example, new data l2 version v4_0
+#outputfile_header, product_info_nrt, product_info_refined = get_pace_data_info(product, l1c_version='v3', l2_version='v3.0', surface='ocean'):
+
+
+print("outputfile_header, product_info_nrt, product_info_refined:", outputfile_header, product_info_nrt, product_info_refined)
+
 
 if(product=='harp2_fastmapol'):
     outputfile_header='harp2_fastmapol_'
@@ -231,7 +252,7 @@ try:
     suite1 =product_info_refined["suite1"]
     suite2 = product_info_refined["suite2"]
     filelist_name=sensor+'_'+suite2+'_'+day1+'_filelist.txt'
-
+    #PACE_HARP2_L2.MAPOL_OCEAN.
     data_path, l1c_path, plot_path, html_path = setup_data(tspan, sensor=sensor, suite=suite2, header=header)
     print("****where data is", data_path)
     if(flag_earthdata_cloud):
@@ -294,7 +315,7 @@ try:
     print("check existing folder")
     filelist_l2 = glob.glob(data_path+f'/*{l2str}*.nc')
     nfile = len(filelist_l2)
-    print(f"*****list all the l2 files in {data_path} *****")
+    print(f"*****list all the l2 files in {data_path} using {l2str} *****")
     print(filelist_l2)
     print("total file before selection in existing folder", nfile)
 except:
