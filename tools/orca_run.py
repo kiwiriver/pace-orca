@@ -42,6 +42,7 @@ from tools.orca_utility import *
 from tools.orca_download import *
 from tools.orca_ai import *
 from tools.orca_pace import *
+from tools.orca_plot_setup import load_dict1v
 
 from matplotlib import rcParams
 
@@ -167,10 +168,21 @@ if(product=='harp2_fastmapol'):
     
     #100*100 early version
     #100*20 may be too less
-        
-    iv=[40, 5, 85] #nadir rgb
-    iwvv=0
+
+    #nadir rgb
+    #iv=[[40, 5, 85]]
+    #ivlabel=[0]
+
+    #more angles
+    ivlabel=[-40,-20,0,20,40]
+    ivv=[[58, 8, 88],
+        [48, 6, 86],
+        [39, 4, 85],
+        [31, 3, 83],
+        [21, 1, 82]]
+
     ivp=iv
+    iwvv=0
     iwvvp=iwvv
     
     iwv550=1 #550 for aod_min
@@ -184,11 +196,14 @@ elif(product=='spexone_fastmapol'):
     dict1 = {'aod_min':[0.2,aod_min_default], \
          'aod_min_plot':[0.2, aod_min_plot_default],\
           'npixel_min':[100*4, npixel_min_default]}
-    
-    iwvv=[290, 170, 60] #l1c
+
+    #need to update to include more angles
     iv=2 #0 degree
-    iwvvp=[39, 25, 9] #668.4302, 548.3369, 437.2723, 
     ivp=iv
+
+    iwvv=[290, 170, 60] #l1c
+    iwvvp=[39, 25, 9] #668.4302, 548.3369, 437.2723, 
+    
     
     iwv550=21 #550
     iwv_aod=21 #550
@@ -201,10 +216,13 @@ elif(product=='spexone_remotap'):
          'aod_min_plot':[0.2, aod_min_plot_default],\
           'npixel_min':[100*4, npixel_min_default]}
 
-    iwvv=[290, 170, 60] #l1c
+    #need to update to include more angles
     iv=2 #0 degree
-    iwvvp=[39, 25, 9]
     ivp=iv
+    
+    iwvv=[290, 170, 60] #l1c
+    iwvvp=[39, 25, 9]
+    
     
     iwv550=7 #550
     iwv_aod=7 #550
@@ -328,64 +346,92 @@ filev2 = select_data(filelist_l2, \
 nfile = len(filev2)
 print("total file after selection", nfile)
 
+###########################################################################
+#variables to plot:
 
-#key1v = ['aot', 'ssa', 'fvf', 'sph']
-#vmin1v = [0, 0.7, 0, 0]
-#vmax1v = [0.5, 1, 1, 1]
-#cmap1v = ['YlOrRd', 'jet', 'jet', 'jet']
+#'text_box', 'globe', 'rgb'
+sequence = [['globe', 'rgb0',  'rp0', 'dolp0'], \
+            ['aot', 'ssa', 'fvf'], \
+            ['aot_fine', 'aot_coarse', 'angstrom_440_670'],\
+            ['sph', 'sph_fine', 'sph_coarse'],\
+            ['alh', 'aerosol_lidar_ratio', 'aerosol_depol_ratio'], \
+            ['mr', 'mr_fine', 'mr_coarse', 'mi', 'mi_fine', 'mi_coarse'], \
+            ['reff_fine', 'reff_coarse', 'veff_fine', 'veff_coarse'], \
+            ['wind_speed', 'chla'],\
+            ['Rrs1_mean', 'Rrs2_mean', 'Rrs1_std', 'Rrs2_std'],\
+            ['Rrs_angular_mean', 'Rrs_nadir_mean', 'Rrs_angular_std', 'Rrs_nadir_std'],\
+            ['rhos_angular_mean', 'rhos_nadir_mean', 'rhos_angular_std', 'rhos_nadir_std'],\
+            ['chi2','nv_ref','nv_rho', 'nv_dolp', 'quality_flag', 'timing'],\
+            ['ozone','surface_pressure', 'height'],\
+            ['land_fiso', 'land_kvol', 'land_kgeo', 'land_fvol', 'land_fgeo', 'land_bpol', 'land_white_sky_albedo'],\
+            ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+            ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std'],\
+            ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
+            ['rp-40','rp-20','rp0','rp20','rp40'],\
+            ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
+            ]
 
-#key1v = ['aot', 'ssa', 'fvf', 'sph', 'chi2', 'nv_ref', 'nv_dolp']
-#vmin1v = [0, 0.7, 0, 0, 0, 0, 0]
-#vmax1v = [0.5, 1, 1, 1, 5, 170, 170]
-#cmap1v = ['YlOrRd', 'jet', 'jet', 'jet', 'jet', 'jet', 'jet']
+titlev_custom = [["", "Reflectance",  "Rp", "DoLP"], \
+                 ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Volume Fraction"],\
+                 ['AOD (fine)', 'AOD (coarse)', 'Angstrom(440/670)'],\
+                 ["Total Spherical Fraction", "Fine Spherical Fraction", "Coarse Spherical Fraction"], \
+                  ["Aerosol Layer height",'Aerosol lidar ratio', 'Aerosol depol ratio'],\
+                 ["Total refractive index(Real)", "Fine refractive index(Real)", "Coarse refractive index(Real)", "Total refractive index(Imag)", "Fine refractive index(Imag)", "Coarse refractive index(Imag)"],\
+                 ['reff_fine', 'reff_coarse', 'veff_fine', 'veff_coarse'], \
+                 ["Wind speed", "Log10(Chla)"], \
+                 ["Anguar Mean of Rrs_angular", "Anguar Mean of Rrs_nadir", "Angular STD of Rrs_angular", "Angular STD of Rrs_nadir"], \
+                 ["Anguar Mean of Rrs_angular", "Anguar Mean of Rrs_nadir", "Angular STD of Rrs_angular", "Angular STD of Rrs_nadir"], \
+                 ["Anguar Mean of rhos_angular", "Anguar Mean of rhos_nadir", "Angular STD of rhos_angular", "Angular STD of rhos_nadir"], \
+                 ["Cost Function (chi2)", "Total Valid Reflectance (nv_ref)", "Total Valid Reflectance (nv_rho)", "Total Valid DoLP (nv_dolp)","Quality Flag", "Timing"],\
+                 ["Ozone", "Surface Pressure", "Terrain Height (m)"],\
+                ['land_fiso', 'land_kvol', 'land_kgeo', 'land_fvol', 'land_fgeo', 'land_bpol', 'land_white_sky_albedo'],\
+                ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
+                ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std'],\
+                ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
+                ['rp-40','rp-20','rp0','rp20','rp40'],\
+                ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
+                ]
 
+sequence = [['globe', 'rgb0',  'rp0', 'dolp0'], \
+            ['aot', 'ssa', 'fvf'], \
+            ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
+            ['rp-40','rp-20','rp0','rp20','rp40'],\
+            ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
+            ]
+titlev_custom = [["", "Reflectance",  "Rp", "DoLP"], \
+                ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Volume Fraction"],\
+                ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
+                ['rp-40','rp-20','rp0','rp20','rp40'],\
+                ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
+                ]
 
+##########################################################################
 aot_max = args.aod_max_plot_default #default 1.0
-#aot_max = 0.5
-#aot_max = 1.0
-dict1v= {'ozone':[[150, 450], 'jet','linear'], 'surface_pressure':[[500,1100],'jet','linear'],\
-         'height':[[0,4000], 'jet','linear'],\
-         'aot':[[0, aot_max],'YlOrRd','linear'] , \
-         'ssa':[[0.7, 1], 'RdBu','linear'], \
-         'fvf':[[0, 1], 'jet','linear'], \
-         'sph':[[0,1], 'jet','linear'], 'sph_fine':[[0,1], 'jet','linear'], 'sph_coarse':[[0,1], 'jet','linear'],\
-         'aot_fine':[[0,aot_max], 'YlOrRd','linear'], 'aot_coarse':[[0,aot_max], 'YlOrRd','linear'], \
-         'angstrom_440_670':[[-1,2], 'jet','linear'], \
-         'alh':[[0,15], 'jet','linear'], \
-          'mr':[[1.3,1.65], 'jet','linear'], 'mi':[[0,0.03], 'jet','linear'], \
-          'mr_fine':[[1.3,1.65], 'jet','linear'], 'mi_fine':[[0,0.03], 'jet','linear'], \
-          'mr_coarse':[[1.3,1.65], 'jet','linear'], 'mi_coarse':[[0,0.03], 'jet','linear'], \
-          'aerosol_lidar_ratio':[[0,100], 'jet','linear'], 'aerosol_depol_ratio':[[0,0.2], 'jet','linear'],\
-          'wind_speed': [[0, 20], 'jet','linear'], \
-           'wind_speed': [[0, 6], 'jet','linear'],  
-           'chla':[[-2,1], 'jet','log10'],\
-          'Rrs1_mean':[[0,0.02], 'jet','linear'], 'Rrs1':[[0,0.02], 'jet','linear'],\
-          'Rrs2_mean':[[0,0.02], 'jet','linear'], 'Rrs2':[[0,0.02], 'jet','linear'],\
-          'Rrs_angular_mean':[[0,0.02], 'jet','linear'], 'Rrs_angular_std':[[0,0.02], 'jet','linear'],\
-          'Rrs_nadir_mean':[[0,0.02], 'jet','linear'], 'Rrs_nadir_std':[[0,0.02], 'jet','linear'],\
-          'rhos_angular_mean':[[0,1], 'jet','linear'], 'rhos_angular_std':[[0,1], 'jet','linear'],\
-          'rhos_nadir_mean':[[0,1], 'jet','linear'], 'rhos_nadir_std':[[0,1], 'jet','linear'],\
-          'chi2':[[0,5], 'jet','linear'], 'timing':[[0, 2],'jet','linear'], \
-          'nv_ref':[[0,nv_max], 'jet','linear'], \
-          'nv_rho':[[0,nv_max], 'jet','linear'], \
-          'nv_dolp':[[0,nv_max], 'jet','linear'],'quality_flag':[[0,5], 'jet','linear'],\
-          'land_fiso':[[0,1], 'jet', 'linear'],
-          'land_kvol':[[0,1.5], 'jet', 'linear'],'land_kgeo':[[0,0.35], 'jet', 'linear'],
-          'land_fvol':[[0,1.5], 'jet', 'linear'],'land_fgeo':[[0,0.35], 'jet', 'linear'],
-          'land_bpol':[[0,10], 'jet', 'linear'],
-          'land_white_sky_albedo':[[0,1], 'jet', 'linear']}
 
-#set it to empty
-#dict1v = {}
+dict1v = load_dict1v(aot_max=aot_max, nv_max=nv_max)
+
+#only keep the keys already defined in sequence
+sequence_keys = {
+    key
+    for row in sequence
+    for key in row
+}
+
+dict1v = {
+    key: value
+    for key, value in dict1v.items()
+    if key in sequence_keys
+}
 
 #still keep Rrs1 and Rrs2 and ref, for old files
 
 key1v = list(dict1v.keys())
+print("l2 keys to plot", key1v)
 vmin1v = [dict1v[key][0][0] for key in key1v]
 vmax1v = [dict1v[key][0][1] for key in key1v]
 cmap1v = [dict1v[key][1] for key in key1v]
 scale1v = [dict1v[key][2] for key in key1v]
-
+extend1v = [dict1v[key][3] for key in key1v]
 
 print("key1v =", key1v)
 print("vmin1v =", vmin1v)
@@ -402,14 +448,19 @@ print("scale1v =", scale1v)
 #plot everything
 #flag_plot_filter=False
 
+##########################################################################
+
+
 ##make plots
 #infov: timestamp3, boundingbox, center, aerosols
-infov, infov_dict = make_plot(filev2, plot_path, l1c_path, \
-                              flag_earthdata_cloud=flag_earthdata_cloud, aod_min_plot=aod_min_plot,\
+infov, infov_dict = make_plot(filev2, plot_path, l1c_path=l1c_path, figsize=(8,8),\
+                              flag_earthdata_cloud=flag_earthdata_cloud,\
+                              aod_min_plot=aod_min_plot,\
                               sensor=sensor, suite1=suite1,suite2=suite2, \
                               iwvv=iwvv,iv=iv, iwvvp=iwvvp,ivp=ivp,\
                               iwv_aod=iwv_aod, iwv_rrs=iwv_rrs, \
-                              key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v, cmap1v=cmap1v, scale1v=scale1v,\
+                              key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v,\
+                              cmap1v=cmap1v, scale1v=scale1v, extend1v=extend1v,\
                              flag_plot_filter=flag_plot_filter)
 
 print(infov_dict)
@@ -433,59 +484,8 @@ plot_bounding_box_many(infov, title=title1, fileout=global_map1)
 #output_file = html_path+sensor+'_'+suite2+'_'+day1+'_n'+str(nfile)+"_aodmin"+str(aod_min)+"_chat5.html"
 output_file = os.path.join(html_path,outputfile_header+day1+'_n'+str(nfile)+"_aod"+str(aod_min)+"_chat5.html")
 
-sequence = [['globe', 'rgb', 'aot', ], ['ssa', 'fvf', 'sph']]
-titlev_custom = [["", "", "AOD (550nm)"], ["Single Scattering Albedo (550nm)", 
-                                           "Fine Mode Volume Fraction", "Spherical Fraction"]]
 
-sequence = [['globe', 'rgb', 'aot', ], \
-            ['ssa', 'fvf', 'sph'], \
-            ['chi2', 'nv_ref', 'nv_rho', 'nv_dolp']]
-titlev_custom = [["", "", "AOD (550nm)"], \
-                 ["Single Scattering Albedo (550nm)", "Fine Mode Volume Fraction", "Spherical Fraction"],\
-                 ["Cost Function (chi2)", "Total Valid Reflectance (nv_ref)", "Total Valid Reflectance (nv_rho)", "Total Valid DoLP (nv_dolp)"]]
 
-#'text_box', 'globe', 'rgb'
-sequence = [['globe', 'rgb', 'dolp'], \
-            ['aot', 'ssa', 'fvf'], \
-            ['aot_fine', 'aot_coarse', 'angstrom_440_670'],\
-            ['sph', 'sph_fine', 'sph_coarse'],\
-            ['alh', 'aerosol_lidar_ratio', 'aerosol_depol_ratio'], \
-            ['mr', 'mr_fine', 'mr_coarse', 'mi', 'mi_fine', 'mi_coarse'], \
-            ['wind_speed', 'chla'],\
-            ['Rrs1_mean', 'Rrs2_mean', 'Rrs1_std', 'Rrs2_std'],\
-            ['Rrs_angular_mean', 'Rrs_nadir_mean', 'Rrs_angular_std', 'Rrs_nadir_std'],\
-            ['rhos_angular_mean', 'rhos_nadir_mean', 'rhos_angular_std', 'rhos_nadir_std'],\
-            ['chi2','nv_ref','nv_rho', 'nv_dolp', 'quality_flag', 'timing'],\
-            ['ozone','surface_pressure', 'height'],\
-            ['land_fiso', 'land_kvol', 'land_kgeo', 'land_fvol', 'land_fgeo', 'land_bpol', 'land_white_sky_albedo'],\
-            ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
-            ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
-            ]
-
-titlev_custom = [["", "Reflectance", "DoLP"], \
-                 ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Volume Fraction"],\
-                 ['AOD (fine)', 'AOD (coarse)', 'Angstrom(440/670)'],\
-                 ["Total Spherical Fraction", "Fine Spherical Fraction", "Coarse Spherical Fraction"], \
-                  ["Aerosol Layer height",'Aerosol lidar ratio', 'Aerosol depol ratio'],\
-                 ["Total refractive index(Real)", "Fine refractive index(Real)", "Coarse refractive index(Real)", "Total refractive index(Imag)", "Fine refractive index(Imag)", "Coarse refractive index(Imag)"],\
-                 ["Wind speed", "Log10(Chla)"], \
-                 ["Anguar Mean of Rrs_angular", "Anguar Mean of Rrs_nadir", "Angular STD of Rrs_angular", "Angular STD of Rrs_nadir"], \
-                 ["Anguar Mean of Rrs_angular", "Anguar Mean of Rrs_nadir", "Angular STD of Rrs_angular", "Angular STD of Rrs_nadir"], \
-                 ["Anguar Mean of rhos_angular", "Anguar Mean of rhos_nadir", "Angular STD of rhos_angular", "Angular STD of rhos_nadir"], \
-                 ["Cost Function (chi2)", "Total Valid Reflectance (nv_ref)", "Total Valid Reflectance (nv_rho)", "Total Valid DoLP (nv_dolp)","Quality Flag", "Timing"],\
-                 ["Ozone", "Surface Pressure", "Terrain Height (m)"],\
-                ['land_fiso', 'land_kvol', 'land_kgeo', 'land_fvol', 'land_fgeo', 'land_bpol', 'land_white_sky_albedo'],\
-                ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
-                ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
-                ]
-#sequence = [['globe', 'rgb', 'dolp'], \
-#            ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
-#            ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
-#            ]
-#titlev_custom = [["", "Reflectance", "DoLP"], \
-#                ['rgb_Rrs_angular_mean', 'rgb_Rrs_nadir_mean', 'rgb_Rrs_angular_std', 'rgb_Rrs_nadir_std'],\
-#                ['rgb_rhos_angular_mean', 'rgb_rhos_nadir_mean', 'rgb_rhos_angular_std', 'rgb_rhos_nadir_std']
-#                ]
 
 #title = f"{sensor} {suite2} Rapid Data Live View ({tspan[0]})"
 title = format_simple_title(sensor, suite2, tspan)

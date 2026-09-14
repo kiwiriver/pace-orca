@@ -28,41 +28,20 @@ echo "Using file: $pyfile"
 input_data_path='None'
 
 #wild fire in us
-#timestamp='20260701T192832'
+timestamp='20260701T192832'
 #timestamp='20260707T194004'
 #timestamp='20260717T171516'
 
 #canada fire
-#timestamp='20260716T181854'
+timestamp='20260716T181854'
 #timestamp='20260716T182354'
 
 #ukraine explosion
 #timestamp='20260718T094322'
 
-#pace-pax hsrl scene
-#lower portion
-#timestamp='20240930T210357'
-#upper portion
-#timestamp='20240930T210857'
-#20240927T205972
-#20240927T210427
-
-#dust and smoke
-timestamp='20260715T123919'
-#timestamp='20260715T142237'
-
-#header='land_v4.0'
-#l2str='V4_0'
-#suite1='L2.MAPOL_LAND'
-
-#header='ocean_v3.0'
-#l2str='V3_0'
-#suite1='L2.MAPOL_OCEAN'
-
-header='ocean_v4.0_angle'
+header='land_v4.0'
+suite1='L2.MAPOL_LAND'
 l2str='V4_0'
-suite1='L2.MAPOL_OCEAN'
-
 l2str=$suite1.$l2str
 echo $l2str
 
@@ -94,9 +73,10 @@ product="harp2_fastmapol"
 #include more pixels, 0, 0.01
 aod_min_default=0.001 #filtering
 aod_min_plot_default=0.001 #plot
-#aod_max_plot_default=2.0
-#aod_max_plot_default=1.0
-aod_max_plot_default=0.5
+aod_max_plot_default=2fg.0
+fg
+l
+#aod_max_plot_default=0.5
 
 npixel_min_default=1
 

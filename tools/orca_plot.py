@@ -28,15 +28,16 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from cartopy.util import add_cyclic_point
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from tools.orca_download import *
 from tools.orca_utility import *
 from tools.orca_data import extract_timestamp, filter_data
 
-def make_plot(filev2, plot_path, l1c_path="./data/", \
+def make_plot(filev2, plot_path, l1c_path="./data/", figsize=(10,5), \
               flag_earthdata_cloud=True,\
               sensor="PACE_HARP2", suite1="L1C",suite2="L2",\
-              iv=[40, 5, 85], iwvv=0, ivp=None, iwvvp=None,\
+              ivv=[[40, 5, 85]], ivvp=[None], ilabelv=[0], iwvv=0, iwvvp=None,\
               iwv_aod=1, iwv_rrs=0,\
               aod_min_plot=None, criteria = (30, 20, 2.0),\
               key1v = ['aot', 'ssa', 'fvf', 'sph'], 
@@ -44,6 +45,7 @@ def make_plot(filev2, plot_path, l1c_path="./data/", \
               vmax1v = [1, 1, 1, 1],
               cmap1v = ['YlOrRd', 'jet', 'jet', 'jet'],
               scale1v = ['linear', 'linear', 'linear', 'linear'],
+              extend1v = [None, None, None, None],
               flag_plot_filter=False,
               rgb_keys=['Rrs_angular_mean', 'Rrs_nadir_mean', 'Rrs_angular_std', 'Rrs_nadir_std',\
                         'rhos_angular_mean', 'rhos_nadir_mean', 'rhos_angular_std', 'rhos_nadir_std']
@@ -61,11 +63,14 @@ def make_plot(filev2, plot_path, l1c_path="./data/", \
     infov = []
     for file1 in filev2[:]:
         #try:
-        info = plot_l1c_l2(file1, plot_path, iwvv=iwvv,iv=iv, iwvvp=iwvvp,ivp=ivp, \
+        info = plot_l1c_l2(file1, plot_path, figsize=figsize, \
+                           iwvv=iwvv, ivv=ivv, ivvp=ivvp,  ilabelv=ilabelv, iwvvp=iwvvp, \
                            iwv_aod=iwv_aod, iwv_rrs=iwv_rrs,\
-                l1c_path=l1c_path, flag_earthdata_cloud=flag_earthdata_cloud, aod_min_plot=aod_min_plot,\
-                sensor=sensor, suite1=suite1, suite2=suite2, criteria=criteria,\
-                key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v, cmap1v=cmap1v,scale1v=scale1v,\
+                           l1c_path=l1c_path, flag_earthdata_cloud=flag_earthdata_cloud,\
+                           aod_min_plot=aod_min_plot,\
+                           sensor=sensor, suite1=suite1, suite2=suite2, criteria=criteria,\
+                           key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v, \
+                           cmap1v=cmap1v,scale1v=scale1v,extend1v=extend1v,\
                            flag_plot_filter=flag_plot_filter, rgb_keys=rgb_keys)
         infov.append(info)
         #except:
@@ -102,15 +107,19 @@ def create_dict_by_timestamp(infov):
         dict: Dictionary where keys are timestamps and values are corresponding entries.
     """
     return {entry['timestamp']: entry for entry in infov}
-    
-def plot_l1c_l2(file1, plot_path, \
-                l1c_path="./data/", iv=[40, 5, 85], ivp=None, iwvv=0, iwvvp=None, iwv_aod=1,iwv_rrs=0,\
+
+def plot_l1c_l2(file1, plot_path, figsize=(10,5),\
+                l1c_path="./data/", \
+                ivlabel=0,
+                ivv=[[39, 4, 85]],ivvp=[[None]], ilabelv=ilabelv, \
+                iwvv=0, iwvvp=None, iwv_aod=1,iwv_rrs=0,\
                 flag_earthdata_cloud=True, \
                 key1v = ['aot', 'ssa', 'fvf', 'sph'], 
                 vmin1v = [0, 0.7, 0, 0],
                 vmax1v = [1, 1, 1, 1],
                 cmap1v = ['YlOrRd', 'jet', 'jet', 'jet'],
                 scale1v = ['linear', 'linear', 'linear', 'linear'],
+                extend1v = [None, None, None, None],
                 aod_min_plot = None,
                 sensor="PACE_HARP2",suite1="L1C",suite2="L2",
                 criteria = (30, 20, 2.0),
@@ -142,7 +151,19 @@ def plot_l1c_l2(file1, plot_path, \
     if scale=log10, will plot in log10 scale
     flag_plot_filter: true, plot filtered data, false: plot all
     info are still based on filtered information for targeted event
-    
+
+    rgb index: 
+    ivlabel=[-40,-20,0,20,40]
+    ivv=[[58, 8, 88],
+        [48, 6, 86],
+        [39, 4, 85],
+        [31, 3, 83],
+        [21, 1, 82]]
+
+    Target -20°: indices=[86  6 48 76], wavelengths=[440.159 549.465 664.564 865.283], actual angles=[-19.21 -21.48 -20.32 -16.89]
+Target +0°: indices=[85  4 39 74], wavelengths=[440.159 549.465 664.564 865.283], actual angles=[-5.29  6.6   0.6   4.2 ]
+Target +20°: indices=[83  3 31 73], wavelengths=[440.159 549.465 664.564 865.283], actual angles=[22.96 20.75 19.59 18.41]
+
     """
     ########## get l2 data ########################
     print(file1)
@@ -176,54 +197,76 @@ def plot_l1c_l2(file1, plot_path, \
     #get lat, lon, and radiance
     lon2=dataset1['longitude'].values
     lat2=dataset1['latitude'].values
-
-    if (iv is not None) and (iwvv is not None):
-        tmp2i = dataset1.i[:, :, iv, iwvv].values
-    else:
-        tmp2i = np.full_like(lon2, None, dtype=object)
-
-    #make rp
-
-    #dolp data
-    if (ivp is not None) and (iwvvp is not None):
-        tmp2dolp = dataset1.dolp[:, :, ivp, iwvvp].values
-    else:
-        tmp2dolp = np.full_like(lon2, None, dtype=object)
     
+    ################   
     #set output path
     plot_path2 = plot_path+'/'+timestamp3+'/'
     os.makedirs(plot_path2, exist_ok=True)
     print(plot_path2)
+    plot_path2pdf = plot_path+'/'+timestamp3+'/pdf/'
+    os.makedirs(plot_path2pdf, exist_ok=True)
+    print(plot_path2pdf)
 
     #plot bounding box
     fileout= plot_path2+'pace_harp2'+'_'+timestamp3+'_globe.png'
+    #fileout2= plot_path2+'pace_harp2'+'_'+timestamp3+'_globe.png'
     print(fileout)
     boundingbox, center = plot_bounding_box_one(lat2, lon2, timestamp3, fileout=fileout)
     
     info['boundingbox'] = boundingbox
     info['center'] = center
 
+    ##########################################################
     #======= plot more l1 data ==========
-    
-    #with open("tmp2i.pk", "wb") as f:
-    #    pickle.dump([lat2, lon2, tmp2i], f)
-    
-    #plot l1 rgb
-    title = f"{sensor} {suite2}+@{timestamp3}"
-    fileout= plot_path2+sensor+suite2+'_'+timestamp3+'_rgb.png'
-    print(fileout)
-    print("tmp2i shape, min, max:", tmp2i.shape, np.nanmin(tmp2i), np.nanmax(tmp2i))
-    plot_rgb(lon2, lat2, tmp2i, None, plot_type='i', figsize = (10, 5),\
-            title=title, fileout=fileout,)
 
-    #plot l1 rgb in dolp
-    title = f"{sensor} {suite2}+@{timestamp3}"
-    fileout= plot_path2+sensor+suite2+'_'+timestamp3+'_dolp.png'
-    print(fileout)
-    print("tmp2dolp shape, min, max:", tmp2dolp.shape, np.nanmin(tmp2dolp), np.nanmax(tmp2dolp))
-    plot_rgb(lon2, lat2, tmp2dolp, None, plot_type='dolp', figsize = (10, 5),\
-            title=title, fileout=fileout,)
+    for iv, ivp, label1 in zip(ivv, ivvp, ilabelv):
+        print("angle index to plot", iv, ivp, label1)
+        label1 = str(label1)
     
+        if (iv is not None) and (iwvv is not None):
+            tmp2i = dataset1.i[:, :, iv, iwvv].values
+        else:
+            tmp2i = np.full_like(lon2, None, dtype=object)  
+    
+        #dolp data
+        if (ivp is not None) and (iwvvp is not None):
+            tmp2dolp = dataset1.dolp[:, :, ivp, iwvvp].values
+        else:
+            tmp2dolp = np.full_like(lon2, None, dtype=object)
+    
+        #make rp
+        tmp2rp = tmp2dolp * tmp2i
+    
+        #plot l1 rgb
+        title = f"{sensor} {suite2}+@{timestamp3}"
+        fileout= plot_path2+sensor+suite2+'_'+timestamp3+f'_rgb{label1}.png'
+        fileout2= plot_path2pdf+sensor+suite2+'_'+timestamp3+f'_rgb{label1}.pdf'
+        print(fileout)
+        print("tmp2i shape, min, max:", tmp2i.shape, np.nanmin(tmp2i), np.nanmax(tmp2i))
+        plot_rgb(lon2, lat2, tmp2i, None, plot_type='i', figsize = figsize,\
+                title=title, fileout=fileout,fileout2=fileout2)
+    
+        #plot l1 rgb in dolp
+        title = f"{sensor} {suite2}+@{timestamp3}"
+        fileout= plot_path2+sensor+suite2+'_'+timestamp3+f'_dolp{label1}.png'
+        fileout2= plot_path2pdf+sensor+suite2+'_'+timestamp3+f'_dolp{label1}.pdf'
+        print(fileout)
+        print("tmp2dolp shape, min, max:", tmp2dolp.shape, \
+              np.nanmin(tmp2dolp), np.nanmax(tmp2dolp))
+        plot_rgb(lon2, lat2, tmp2dolp, None, plot_type='dolp', figsize = figsize,\
+                title=title, fileout=fileout,fileout2=fileout2)
+    
+        # plot rg for rp
+        title = f"{sensor} {suite2}+@{timestamp3}"
+        fileout= plot_path2+sensor+suite2+'_'+timestamp3+f'_rp{label1}.png'
+        fileout2= plot_path2pdf+sensor+suite2+'_'+timestamp3+f'_rp{label1}.pdf'
+        print(fileout)
+        print("tmp2rp shape, min, max:", tmp2rp.shape, \
+              np.nanmin(tmp2rp), np.nanmax(tmp2rp))
+        plot_rgb(lon2, lat2, tmp2rp, None, plot_type='rp', figsize = figsize,\
+                title=title, fileout=fileout,fileout2=fileout2)
+
+    ##########################################################
     #======= plot l2 data ===============
     #file1: l2 data file, aod_min_plot for data selection
 
@@ -247,8 +290,9 @@ def plot_l1c_l2(file1, plot_path, \
             
             title = f"{sensor} {suite2}+@{timestamp3}:{key2}"
             fileout= plot_path2+sensor+suite2+'_'+timestamp3+f'_{key2}.png'
-            plot_rgb(lon2, lat2, tmp3, None,plot_type=plot_type, figsize = (10, 5),\
-                title=title, fileout=fileout,)
+            fileout2= plot_path2pdf+sensor+suite2+'_'+timestamp3+f'_{key2}.pdf'
+            plot_rgb(lon2, lat2, tmp3, None,plot_type=plot_type, figsize = figsize,\
+                title=title, fileout=fileout,fileout2=fileout2)
         except:
             print(f"cannot plot {key1} in rgb")
     
@@ -307,6 +351,7 @@ def plot_l1c_l2(file1, plot_path, \
             cbar_label = None
             fileout= plot_path2+sensor+suite2+'_'+timestamp3+'_'+key1+'.png'
             print(fileout)
+            fileout2= plot_path2pdf+sensor+suite2+'_'+timestamp3+'_'+key1+'.pdf'
     
             #since chi2, nv, may have different range for harp2 and spexone, redefine them here
             if('harp2' in sensor.lower()):
@@ -330,9 +375,10 @@ def plot_l1c_l2(file1, plot_path, \
                     vmin2, vmax2 = vmin1v[i1], vmax1v[i1]
 
             print("key1 min, max:", np.nanmin(tmp3), np.nanmax(tmp3))
-            plot_rgb(lon2, lat2, tmp2i, tmp3, figsize = (10, 5), \
-                     vmin1=vmin2, vmax1=vmax2 , cmap=cmap1v[i1], \
-                     title=title, fileout=fileout, cbar_label=cbar_label)
+            plot_rgb(lon2, lat2, tmp2i, tmp3, figsize = figsize, \
+                     vmin1=vmin2, vmax1=vmax2 , \
+                     cmap=cmap1v[i1], extend1=extend1v[i1],\
+                     title=title, fileout=fileout, fileout2=fileout2, cbar_label=cbar_label)
         except:
             print(key1, 'not available')
         
@@ -349,7 +395,7 @@ def get_slice_if_exists(dataset, key, iwv_plot):
     else:
         return var.values[:, :]
 
-def plot_l2_product(lat, lon, data, plot_range, label, title, vmin, vmax, figsize=(12, 4), cmap="viridis"):
+def plot_l2_product(lat, lon, data, plot_range, label, title, vmin, vmax, figsize=(12, 4), cmap="viridis", cbar_extend=None):
     """Make map and histogram (default)."""
 
     # Create a figure with two subplots: 1 for map, 1 for histogram
@@ -366,7 +412,7 @@ def plot_l2_product(lat, lon, data, plot_range, label, title, vmin, vmax, figsiz
     pm = ax_map.pcolormesh(
         lon, lat, data, vmin=vmin, vmax=vmax, \
         transform=ccrs.PlateCarree(), cmap=cmap, shading="nearest")
-    plt.colorbar(pm, ax=ax_map, orientation="vertical", pad=0.1, label=label)
+    plt.colorbar(pm, ax=ax_map, orientation="vertical", pad=0.1, label=label,extend=cbar_extend)
     ax_map.set_title(title, fontsize=12)
 
     # Histogram subplot
@@ -414,7 +460,8 @@ def reset_lon(i, tmp2, lon2):
 
             
 def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
-            vmin1=0, vmax1=1.0, cmap='YlOrRd', title=None, fileout=None, \
+            vmin1=0, vmax1=1.0, \
+             cmap='YlOrRd', extend1=None, title=None, fileout=None, fileout2=None, \
              cbar_label=None, cbar_label_fontsize=14):
     """
     extent: for the map
@@ -430,11 +477,14 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
     
     ################################
     ### plot rgb ###################
-    if(plot_type in ['i', 'rp']):
+    if(plot_type in ['i']):
         #tmp2 = reset_data_for_rgb(tmp2, scale1=1/200, scale2=0.4, bias=-0.1)
         tmp2 = reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.3, bias=0)
+    elif(plot_type in ['rp']):
+        tmp2 = reset_data_for_rgb(tmp2, scale1=1/25, scale2=0.3, bias=0)
     elif(plot_type=='dolp'):
-        tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
+        #tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
+        tmp2 = reset_data_for_rgb(tmp2, scale1=5, scale2=0.5, bias=0)
         #tmp2 = reset_data_for_rgb(tmp2, scale1=1/2, scale2=0.3, bias=0)
     elif(plot_type=='rhos_mean'):
         tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
@@ -468,35 +518,106 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
 
         plot_crossdateline_scalar(ax, lon2, lat2, tmp3, cmap=cmap, levels=levels,\
                                ticks=ticks, tick_labels=tick_labels, \
-                               cbar_label=cbar_label, cbar_label_fontsize=cbar_label_fontsize,
+                               cbar_label=cbar_label, \
+                               cbar_label_fontsize=cbar_label_fontsize, \
+                               cbar_extend=extend1,
                                transform=proj)
     except:
         pass
     
     ########################
-    xbin=5
-    ybin=5
-    alpha=0.3
-
-    gl=ax.gridlines(linewidth=0.5, color='gray', alpha=0.3, linestyle='-')
-    cl=ax.coastlines(resolution='50m', color='k', linewidth=0.1) #10m, 110m
-    ax.add_feature(cartopy.feature.OCEAN, edgecolor='w',linewidth=0.01)
-    ax.add_feature(cartopy.feature.LAND, edgecolor='w',linewidth=0.01)
-    gl.top_labels = False #True
+    # Major and minor gridline intervals
+    xbin_major = 5
+    ybin_major = 5
+    xbin_minor = 1
+    ybin_minor = 1
+    
+    # Major gridlines and coordinate labels
+    gl = ax.gridlines(
+        crs=ccrs.PlateCarree(),
+        draw_labels=True,
+        linewidth=0.5,
+        color="gray",
+        alpha=0.3,
+        linestyle="-",
+    )
+    
+    gl.top_labels = False
     gl.bottom_labels = True
     gl.left_labels = True
     gl.right_labels = False
-    gl.xlocator = mticker.FixedLocator(np.arange(-180,180,xbin))
-    gl.ylocator = mticker.FixedLocator(np.arange(-90,90,ybin))
+    
+    gl.xlocator = mticker.FixedLocator(
+        np.arange(-180, 181, xbin_major)
+    )
+    gl.ylocator = mticker.FixedLocator(
+        np.arange(-90, 91, ybin_major)
+    )
+    
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
-    ax.set_xlabel(r"Longitude($^\circ$)")
-    ax.set_ylabel(r"Latitude($^\circ$)")
+    
+    # Latitude and longitude label size
+    gl.xlabel_style = {"size": 20} #16
+    gl.ylabel_style = {"size": 20} #16
+    
+    # Minor gridlines without labels
+    gl_minor = ax.gridlines(
+        crs=ccrs.PlateCarree(),
+        draw_labels=False,
+        linewidth=0.25,
+        color="gray",
+        alpha=0.2,
+        linestyle=":",
+    )
+    
+    gl_minor.xlocator = mticker.FixedLocator(
+        np.arange(-180, 181, xbin_minor)
+    )
+    gl_minor.ylocator = mticker.FixedLocator(
+        np.arange(-90, 91, ybin_minor)
+    )
+    
+    # Coastline and map features
+    ax.coastlines(
+        resolution="50m",
+        color="black",
+        linewidth=0.1,
+    )
+    
+    ax.add_feature(
+        cartopy.feature.OCEAN,
+        edgecolor="white",
+        linewidth=0.01,
+    )
+    
+    ax.add_feature(
+        cartopy.feature.LAND,
+        edgecolor="white",
+        linewidth=0.01,
+    )
+    
+    ax.set_xlabel(r"Longitude ($^\circ$)", fontsize=16)
+    ax.set_ylabel(r"Latitude ($^\circ$)", fontsize=16)
+    ax.set_title(title, fontsize=18)
+    
     plt.tight_layout()
-    plt.title(title)
+    
+    if fileout:
+        plt.savefig(
+            fileout,
+            dpi=400,
+            bbox_inches="tight",
+            pad_inches=0.1,
+        )
 
-    if(fileout):
-        plt.savefig(fileout, dpi=400, bbox_inches='tight', pad_inches=0.1)
+    if fileout2:
+        plt.savefig(
+            fileout2,
+            format="pdf",
+            bbox_inches="tight",
+            pad_inches=0.1,
+        )
     
     plt.close(fig)
 
@@ -598,8 +719,9 @@ def plot_crossdateline_rgb(ax, lon2, lat2, rgb_array, transform=ccrs.PlateCarree
 
 def plot_crossdateline_scalar(ax, lon2, lat2, data, cmap='viridis', levels=None,
                               ticks=None, tick_labels=None,
-                              cbar_label=None, cbar_label_fontsize=None,\
-                             transform=ccrs.PlateCarree()):
+                              cbar_label=None, cbar_label_fontsize=None, \
+                              cbar_extend=None,\
+                              transform=ccrs.PlateCarree()):
     """
     Plot 2D scalar data (e.g., AOD, SST, etc.) that may cross the dateline using Cartopy.
     Works even if longitude coordinates are not equally spaced.
@@ -676,19 +798,40 @@ def plot_crossdateline_scalar(ax, lon2, lat2, data, cmap='viridis', levels=None,
 
     # Optional colorbar
     if ticks is not None:
-        cbar = plt.colorbar(mesh, ax=ax, shrink=0.8, pad=0.02)
+        cax = inset_axes(
+            ax,
+            width="3%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.02, 0, 1, 1),
+            bbox_transform=ax.transAxes,
+            borderpad=0,
+        )
+    
+        cbar = ax.figure.colorbar(
+            mesh,
+            cax=cax,
+            extend=cbar_extend,
+        )
+    
         cbar.set_ticks(ticks)
+    
         if tick_labels is not None:
             cbar.set_ticklabels(tick_labels)
+    
         if cbar_label:
-            cbar.ax.xaxis.set_label_position('top')
-            cbar.ax.set_xlabel(cbar_label, labelpad=10, fontsize=cbar_label_fontsize)
+            cbar.ax.set_title(
+                cbar_label,
+                fontsize=cbar_label_fontsize,
+                pad=6,
+            )
 
     return mesh
 
 
 def plot_crossdateline_data(ax, lon2, lat2, tmp3, cmap='viridis', levels=None, \
-                            ticks=None, tick_labels=None, cbar_label=None, cbar_label_fontsize=None):
+                            ticks=None, tick_labels=None, cbar_label=None, \
+                            cbar_label_fontsize=None, cbar_extend=None):
     """
     Plot both rgb and scalar, not handeling crossdateline well, 
     2D data that may cross the dateline using Cartopy.
@@ -729,7 +872,7 @@ def plot_crossdateline_data(ax, lon2, lat2, tmp3, cmap='viridis', levels=None, \
         )
         
     if(ticks):
-        cbar=plt.colorbar(shrink=0.8, pad=0.02) #shrink=0.9, pad=0.1 
+        cbar=plt.colorbar(shrink=0.8, pad=0.02,extend=cbar_extend) #shrink=0.9, pad=0.1 
         cbar.set_ticks(ticks)
         cbar.set_ticklabels(tick_labels)
         cbar.ax.xaxis.set_label_position('top')  # Position the label on the top

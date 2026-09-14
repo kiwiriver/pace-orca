@@ -14,7 +14,6 @@ from tools.orca_download import download_l2_cloud, download_l2_web
 
 import re
 
-
 def parse_l2str(l2str):
     """
     Parse strings such as:
@@ -67,7 +66,7 @@ def parse_l2str(l2str):
         l2_version = f"v{major_version}"
 
     return l1c_version, l2_version, surface
-
+    
 def get_pace_data_info(product, l1c_version='v3', l2_version='v3.0', surface='ocean'):
     """
     get pace data info
@@ -87,8 +86,8 @@ def get_pace_data_info(product, l1c_version='v3', l2_version='v3.0', surface='oc
             product_info_nrt['dtid']=1546
             product_info_refined['dtid']=1547
         if surface=='LAND':
-            product_info_nrt['dtid']=1246
-            product_info_refined['dtid']=1247
+            product_info_nrt['dtid']=1247
+            product_info_refined['dtid']=1246
             
     elif(product=='spexone_fastmapol'):
         #only ocean
@@ -108,17 +107,29 @@ def get_pace_data_info(product, l1c_version='v3', l2_version='v3.0', surface='oc
         product_info_refined={}
         
     return outputfile_header, product_info_nrt, product_info_refined
-
-def download_pace_data(tspan, product, appkey, api_key, path1='./pace_tmp/', \
+    
+def download_pace_data(tspan, product, appkey, api_key, l2str='L2.MAPOL_LAND.V4_0',\
+                       path1='./pace_tmp/', \
                        flag_earthdata_cloud = False):
     #setup_data(tspan, sensor='PACE_HARP2', suite='MAPOL_OCEAN.V3.0', path1='./pace_tmp/')
-    
-    outputfile_header, product_info_nrt, product_info_refined = get_pace_data_info(product)
-    
+
+
+    l1c_version, l2_version, surface = parse_l2str(l2str)
+
+    print("l1c_version:", l1c_version)  # v4
+    print("l2_version:", l2_version)   # v4.0
+    print("surface:", surface)      # land
+
+    outputfile_header, product_info_nrt, product_info_refined = get_pace_data_info(
+                        product,
+                        l1c_version=str(l1c_version),
+                        l2_version=str(l2_version),
+                        surface=str(surface),
+                    )
+
     if(flag_earthdata_cloud):
         auth = earthaccess.login(persist=True)
     
-        
     # Change default font to something available
     rcParams['font.family'] = 'serif' 
     rcParams['font.size'] = '12' 
