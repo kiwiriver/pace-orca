@@ -170,18 +170,19 @@ if(product=='harp2_fastmapol'):
     #100*20 may be too less
 
     #nadir rgb
-    #iv=[[40, 5, 85]]
-    #ivlabel=[0]
+    #ivv=[[40, 5, 85]]
+    #ivvp=ivv
+    #ilabelv=[0]
 
     #more angles
-    ivlabel=[-40,-20,0,20,40]
     ivv=[[58, 8, 88],
         [48, 6, 86],
         [39, 4, 85],
         [31, 3, 83],
         [21, 1, 82]]
-
-    ivp=iv
+    ivvp=ivv
+    ilabelv=[-40,-20,0,20,40]
+    
     iwvv=0
     iwvvp=iwvv
     
@@ -198,8 +199,9 @@ elif(product=='spexone_fastmapol'):
           'npixel_min':[100*4, npixel_min_default]}
 
     #need to update to include more angles
-    iv=2 #0 degree
-    ivp=iv
+    ivv=[2] #0 degree
+    ivvp=ivv
+    ilabelv=[0]
 
     iwvv=[290, 170, 60] #l1c
     iwvvp=[39, 25, 9] #668.4302, 548.3369, 437.2723, 
@@ -217,8 +219,9 @@ elif(product=='spexone_remotap'):
           'npixel_min':[100*4, npixel_min_default]}
 
     #need to update to include more angles
-    iv=2 #0 degree
-    ivp=iv
+    ivv=2 #0 degree
+    ivvp=ivv
+    ilabelv=[0]
     
     iwvv=[290, 170, 60] #l1c
     iwvvp=[39, 25, 9]
@@ -457,7 +460,8 @@ infov, infov_dict = make_plot(filev2, plot_path, l1c_path=l1c_path, figsize=(8,8
                               flag_earthdata_cloud=flag_earthdata_cloud,\
                               aod_min_plot=aod_min_plot,\
                               sensor=sensor, suite1=suite1,suite2=suite2, \
-                              iwvv=iwvv,iv=iv, iwvvp=iwvvp,ivp=ivp,\
+                              ivv=ivv, ivvp=ivvp, ilabelv=ilabelv,\
+                              iwvv=iwvv,iwvvp=iwvvp,\
                               iwv_aod=iwv_aod, iwv_rrs=iwv_rrs, \
                               key1v=key1v, vmin1v=vmin1v, vmax1v=vmax1v,\
                               cmap1v=cmap1v, scale1v=scale1v, extend1v=extend1v,\

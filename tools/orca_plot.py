@@ -111,7 +111,7 @@ def create_dict_by_timestamp(infov):
 def plot_l1c_l2(file1, plot_path, figsize=(10,5),\
                 l1c_path="./data/", \
                 ivlabel=0,
-                ivv=[[39, 4, 85]],ivvp=[[None]], ilabelv=ilabelv, \
+                ivv=[[39, 4, 85]],ivvp=[[None]], ilabelv=[0], \
                 iwvv=0, iwvvp=None, iwv_aod=1,iwv_rrs=0,\
                 flag_earthdata_cloud=True, \
                 key1v = ['aot', 'ssa', 'fvf', 'sph'], 
