@@ -395,18 +395,19 @@ titlev_custom = [["", "Reflectance",  "Rp", "DoLP"], \
                 ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
                 ]
 
-sequence = [['globe', 'rgb0',  'rp0', 'dolp0'], \
-            ['aot', 'ssa', 'fvf'], \
-            ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
-            ['rp-40','rp-20','rp0','rp20','rp40'],\
-            ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
-            ]
-titlev_custom = [["", "Reflectance",  "Rp", "DoLP"], \
-                ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Volume Fraction"],\
-                ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
-                ['rp-40','rp-20','rp0','rp20','rp40'],\
-                ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
-                ]
+#sequence = [['globe', 'rgb0',  'rp0', 'dolp0'], \
+#            ['aot', 'ssa', 'fvf'], \
+#            ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
+#            ['rp-40','rp-20','rp0','rp20','rp40'],\
+#            ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
+#            ]
+
+#titlev_custom = [["", "Reflectance",  "Rp", "DoLP"], \
+#                ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Volume Fraction"],\
+#                ['rgb-40','rgb-20','rgb0','rgb20','rgb40'],\
+#                ['rp-40','rp-20','rp0','rp20','rp40'],\
+#                ['dolp-40','dolp-20','dolp0','dolp20','dolp40'],
+#                ]
 
 ##########################################################################
 aot_max = args.aod_max_plot_default #default 1.0
@@ -456,7 +457,9 @@ print("scale1v =", scale1v)
 
 ##make plots
 #infov: timestamp3, boundingbox, center, aerosols
-infov, infov_dict = make_plot(filev2, plot_path, l1c_path=l1c_path, figsize=(8,8),\
+figsize = (8,8)
+infov, infov_dict = make_plot(filev2, plot_path, l1c_path=l1c_path, \
+                              figsize=figsize,\
                               flag_earthdata_cloud=flag_earthdata_cloud,\
                               aod_min_plot=aod_min_plot,\
                               sensor=sensor, suite1=suite1,suite2=suite2, \

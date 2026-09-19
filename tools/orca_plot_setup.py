@@ -26,8 +26,8 @@ def load_dict1v(aot_max=1.0, nv_max=90):
 
     dict1v = {
         # Meteorological variables
-        "ozone": [[150, 450], "Spectral_r", "linear", None],
-        "surface_pressure": [[500, 1100], "Spectral_r", "linear", None],
+        "ozone": [[150, 450], "Spectral_r", "linear", "both"],
+        "surface_pressure": [[500, 1100], "Spectral_r", "linear", "both"],
         "height": [[0, 4000], "Spectral_r", "linear", "max"],
 
         # Aerosol optical properties
@@ -35,7 +35,7 @@ def load_dict1v(aot_max=1.0, nv_max=90):
         "aot_fine": [[0, aot_max], "YlOrRd", "linear", "max"],
         "aot_coarse": [[0, aot_max], "YlOrRd", "linear", "max"],
         "ssa": [[0.8, 1.0], "RdYlBu", "linear", "min"],
-        "fvf": [[0, 1], "RdYlBu_r", "linear", "both"],
+        "fvf": [[0, 1], "RdYlBu_r", "linear", None],
         "angstrom_440_670": [[0, 2], "RdYlBu_r", "linear", "both"],
         "angstrom_440_870": [[0, 2], "RdYlBu_r", "linear", "both"],
         "alh": [[0, 6], "Spectral_r", "linear", "max"],
@@ -54,10 +54,10 @@ def load_dict1v(aot_max=1.0, nv_max=90):
         "mi_coarse": [[0, 0.03], "Spectral_r", "linear", "max"],
 
         # Aerosol size
-        "reff_fine": [[0, 1], "Spectral_r", "linear", "both"],
-        "reff_coarse": [[1, 3], "Spectral_r", "linear", "both"],
-        "veff_fine": [[0, 1], "Spectral_r", "linear", "both"],
-        "veff_coarse": [[0, 1], "Spectral_r", "linear", "both"],
+        "reff_fine": [[0, 1], "Spectral_r", "linear", "max"],
+        "reff_coarse": [[1, 3], "Spectral_r", "linear", "max"],
+        "veff_fine": [[0, 1], "Spectral_r", "linear", "max"],
+        "veff_coarse": [[0, 1], "Spectral_r", "linear", "max"],
 
         # Lidar-related properties
         "aerosol_lidar_ratio": [
@@ -82,20 +82,20 @@ def load_dict1v(aot_max=1.0, nv_max=90):
             [-0.001, 0.015], "magma", "linear", "max"
         ],
         "Rrs_angular_std": [
-            [0, 0.005], "magma", "linear", "both"
+            [0, 0.005], "magma", "linear", "max"
         ],
         "Rrs_nadir_mean": [
             [-0.001, 0.015], "magma", "linear", "max"
         ],
         "Rrs_nadir_std": [
-            [0, 0.005], "magma", "linear", "both"
+            [0, 0.005], "magma", "linear", "max"
         ],
 
         # Land surface reflectance
         "rhos_angular_mean": [[0, 1], "magma", "linear", "max"],
-        "rhos_angular_std": [[0, 1], "magma", "linear", "both"],
+        "rhos_angular_std": [[0, 1], "magma", "linear", "max"],
         "rhos_nadir_mean": [[0, 1], "magma", "linear", "max"],
-        "rhos_nadir_std": [[0, 1], "magma", "linear", "both"],
+        "rhos_nadir_std": [[0, 1], "magma", "linear", "max"],
 
         # Retrieval diagnostics
         "chi2": [[0, 2], "viridis", "linear", "max"],

@@ -29,12 +29,13 @@ import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from cartopy.util import add_cyclic_point
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from tools.orca_download import *
 from tools.orca_utility import *
 from tools.orca_data import extract_timestamp, filter_data
 
-def make_plot(filev2, plot_path, l1c_path="./data/", figsize=(10,5), \
+def make_plot(filev2, plot_path, l1c_path="./data/", figsize=(6,7), \
               flag_earthdata_cloud=True,\
               sensor="PACE_HARP2", suite1="L1C",suite2="L2",\
               ivv=[[40, 5, 85]], ivvp=[None], ilabelv=[0], iwvv=0, iwvvp=None,\
@@ -108,7 +109,7 @@ def create_dict_by_timestamp(infov):
     """
     return {entry['timestamp']: entry for entry in infov}
 
-def plot_l1c_l2(file1, plot_path, figsize=(10,5),\
+def plot_l1c_l2(file1, plot_path, figsize=(6,7),\
                 l1c_path="./data/", \
                 ivlabel=0,
                 ivv=[[39, 4, 85]],ivvp=[[None]], ilabelv=[0], \
@@ -429,14 +430,28 @@ def plot_l2_product(lat, lon, data, plot_range, label, title, vmin, vmax, figsiz
     # plt.tight_layout()
     plt.show()
 
-def reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.5, bias=-0.1):
-    tmp2 = (tmp2*scale1)**scale2
-    tmp2=tmp2+bias
-    #tmp2[tmp2<0]=0.0
-    #tmp2[tmp2>0.99] = 0.99
-    tmp2 = np.clip(tmp2, 0, 1)
-    return tmp2
 
+
+def reset_data_for_rgb(tmp2, scale1=1/200, scale2=0.5,
+                       bias=-0.1, knee=0.7, compression=0.5):
+    """
+    A simple approach is tried, but cloud saturated
+    def reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.5, bias=-0.1):
+        tmp2 = (tmp2*scale1)**scale2
+        tmp2=tmp2+bias
+        tmp2 = np.clip(tmp2, 0, 1)
+        return tmp2
+    """
+    x = np.maximum(tmp2 * scale1, 0)
+    x = x**scale2 + bias
+    x = np.maximum(x, 0)
+
+    # compress only bright pixels
+    bright = x > knee
+    x[bright] = knee + (x[bright] - knee) * compression
+
+    return np.clip(x, 0, 1)
+    
 def reset_lon(i, tmp2, lon2):
     """resolve the issue when lon cross dateline
     i=0: lon<0
@@ -459,7 +474,7 @@ def reset_lon(i, tmp2, lon2):
     return tmp2t
 
             
-def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
+def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (6, 6), \
             vmin1=0, vmax1=1.0, \
              cmap='YlOrRd', extend1=None, title=None, fileout=None, fileout2=None, \
              cbar_label=None, cbar_label_fontsize=14):
@@ -478,13 +493,14 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
     ################################
     ### plot rgb ###################
     if(plot_type in ['i']):
-        #tmp2 = reset_data_for_rgb(tmp2, scale1=1/200, scale2=0.4, bias=-0.1)
-        tmp2 = reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.3, bias=0)
+        tmp2 = reset_data_for_rgb(tmp2, scale1=1/200, scale2=0.5, bias=-0.1)
+        #tmp2 = reset_data_for_rgb(tmp2, scale1=1/250, scale2=0.3, bias=0)
     elif(plot_type in ['rp']):
         tmp2 = reset_data_for_rgb(tmp2, scale1=1/25, scale2=0.3, bias=0)
     elif(plot_type=='dolp'):
         #tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
-        tmp2 = reset_data_for_rgb(tmp2, scale1=5, scale2=0.5, bias=0)
+        #tmp2 = reset_data_for_rgb(tmp2, scale1=5, scale2=0.5, bias=0) #too bright
+        tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
         #tmp2 = reset_data_for_rgb(tmp2, scale1=1/2, scale2=0.3, bias=0)
     elif(plot_type=='rhos_mean'):
         tmp2 = reset_data_for_rgb(tmp2, scale1=2, scale2=0.5, bias=0)
@@ -502,14 +518,6 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
 
     ################################
     #### plot variable #############
-
-    # Determine if longitudes cross the dateline
-    #fixed cross dateline issue: from Kehrli, Matthew
-    #flag_crossdateline = (ds['longitude'].max() - ds['longitude'].min()) > 180    
-    #if flag_crossdateline:
-    #    fig, ax = plt.subplots(figsize=(10, 8), subplot_kw={'projection': ccrs.PlateCarree(central_longitude=180)})
-    #else:
-    #    fig, ax = plt.subplots(figsize=(10, 8), subplot_kw={'projection': ccrs.PlateCarree()})
     
     try:
         levels = np.linspace(vmin1, vmax1,21)
@@ -584,77 +592,131 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (10, 5), \
         color="black",
         linewidth=0.1,
     )
-    
-    ax.add_feature(
-        cartopy.feature.OCEAN,
-        edgecolor="white",
-        linewidth=0.01,
-    )
-    
-    ax.add_feature(
-        cartopy.feature.LAND,
-        edgecolor="white",
-        linewidth=0.01,
-    )
+
+    #land_color="0.75"
+    #ocean_color="0.85"
+    #ax.add_feature(cfeature.OCEAN,facecolor=ocean_color,edgecolor="none",zorder=0,)
+    #ax.add_feature(cfeature.LAND,facecolor=land_color,edgecolor="none",zorder=0,)
+
+    #edgecolor="white"
+    ax.add_feature(cartopy.feature.OCEAN, edgecolor="none",linewidth=0.01,zorder=0,)
+    ax.add_feature(cartopy.feature.LAND, edgecolor="none",linewidth=0.01,zorder=0,)
     
     ax.set_xlabel(r"Longitude ($^\circ$)", fontsize=16)
     ax.set_ylabel(r"Latitude ($^\circ$)", fontsize=16)
-    ax.set_title(title, fontsize=18)
+    #ax.set_title(title, fontsize=18)
+    ax.set_title(title, fontsize=12)
     
-    plt.tight_layout()
-    
+    #plt.tight_layout()
+
+    fig.canvas.draw()
+
     if fileout:
-        plt.savefig(
+        fig.savefig(
             fileout,
             dpi=400,
             bbox_inches="tight",
             pad_inches=0.1,
         )
-
+    
     if fileout2:
-        plt.savefig(
+        fig.savefig(
             fileout2,
             format="pdf",
+            dpi=300,
             bbox_inches="tight",
             pad_inches=0.1,
         )
     
     plt.close(fig)
 
-def plot_crossdateline_extent(lon2, lat2):
+def plot_crossdateline_extent(lon2, lat2, aspect_ratio=1.2):
     """
-    Compute map extent that handles dateline-crossing correctly.
+    Compute a fixed-aspect-ratio map extent.
+
+    The latitude range is determined directly from the data.
+    The longitude range is determined from:
+
+        lon_width = lat_height * aspect_ratio
+
+    and centered on the middle of the longitude coverage.
 
     Parameters
     ----------
     lon2, lat2 : 2D numpy arrays
         Longitude and latitude grids.
 
+    aspect_ratio : float, default=1.0
+        Desired longitude-width / latitude-height ratio.
+        For example:
+            1.0 -> square extent
+            1.5 -> longitude span is 1.5 times latitude span
+            2.0 -> longitude span is 2 times latitude span
+    
     Returns
     -------
     extent : list
         [lon_min, lon_max, lat_min, lat_max]
+
     projection : ccrs.Projection
         Recommended Cartopy projection.
-    flag_crossdateline : bool
-        Whether data crosses the dateline.
-    """
-    lon_flat = lon2.flatten()  # More explicit than concatenate
-    lat_flat = lat2.flatten()
-    lon_min, lon_max = lon_flat.min(), lon_flat.max()
-    lat_min, lat_max = lat_flat.min(), lat_flat.max()
 
-    flag_crossdateline = (lon_max - lon_min) > 180
+    flag_crossdateline : bool
+        Whether the data crosses the dateline.
+    """
+
+    # Flatten and remove invalid values
+    lon_flat = np.asarray(lon2).ravel()
+    lat_flat = np.asarray(lat2).ravel()
+
+    lon_flat = lon_flat[np.isfinite(lon_flat)]
+    lat_flat = lat_flat[np.isfinite(lat_flat)]
+
+    # Latitude range comes directly from data
+    lat_min = lat_flat.min()
+    lat_max = lat_flat.max()
+    lat_height = lat_max - lat_min
+
+    # ---------------------------------------------------------
+    # Determine whether scene crosses the dateline
+    # ---------------------------------------------------------
+    lon_min_raw = lon_flat.min()
+    lon_max_raw = lon_flat.max()
+
+    flag_crossdateline = (lon_max_raw - lon_min_raw) > 180
 
     if flag_crossdateline:
-        print("*************cross dateline detected")
-        # Convert longitudes to [-180, 180] range for proper extent calculation
-        lon_wrapped = np.where(lon_flat > 180, lon_flat - 360, lon_flat)
-        extent = [lon_wrapped.min(), lon_wrapped.max(), lat_min, lat_max]
+        print("************* cross dateline detected")
+
+        # Put longitude into a continuous coordinate system
+        # centered around 180 degrees
+        lon_work = np.mod(lon_flat, 360.0)
+
         projection = ccrs.PlateCarree(central_longitude=180)
+
     else:
-        extent = [lon_min, lon_max, lat_min, lat_max]
+        lon_work = lon_flat.copy()
         projection = ccrs.PlateCarree()
+
+    # ---------------------------------------------------------
+    # Find center of actual longitude coverage
+    # ---------------------------------------------------------
+    lon_center = 0.5 * (lon_work.min() + lon_work.max())
+
+    # ---------------------------------------------------------
+    # Force requested aspect ratio
+    # ---------------------------------------------------------
+    lon_width = lat_height * aspect_ratio
+
+    lon_min = lon_center - lon_width / 2
+    lon_max = lon_center + lon_width / 2
+
+    extent = [
+        lon_min,
+        lon_max,
+        lat_min,
+        lat_max,
+    ]
 
     return extent, projection, flag_crossdateline
 
@@ -798,27 +860,29 @@ def plot_crossdateline_scalar(ax, lon2, lat2, data, cmap='viridis', levels=None,
 
     # Optional colorbar
     if ticks is not None:
-        cax = inset_axes(
-            ax,
-            width="3%",
-            height="100%",
-            loc="lower left",
-            bbox_to_anchor=(1.02, 0, 1, 1),
-            bbox_transform=ax.transAxes,
-            borderpad=0,
+        divider = make_axes_locatable(ax)
+    
+        cax = divider.append_axes(
+            "right",
+            size="6%",
+            pad=0.15,
+            axes_class=plt.Axes,
         )
     
         cbar = ax.figure.colorbar(
             mesh,
             cax=cax,
-            extend=cbar_extend,
+            extend=cbar_extend or "neither",
         )
     
         cbar.set_ticks(ticks)
     
         if tick_labels is not None:
             cbar.set_ticklabels(tick_labels)
-    
+
+        #set a large font size same as x/y axies labels
+        cbar.ax.tick_params(labelsize=20)
+        
         if cbar_label:
             cbar.ax.set_title(
                 cbar_label,
@@ -957,8 +1021,14 @@ def plot_bounding_box_one(lat, lon, timestamp1, xbin=15, ybin=15, title=None, fi
     ax.set_global()
     
     # Add map features
-    ax.add_feature(cartopy.feature.OCEAN, edgecolor='w', linewidth=0.01)
-    ax.add_feature(cartopy.feature.LAND, edgecolor='w', linewidth=0.01)
+    #land_color="0.75"
+    #ocean_color="0.85"
+    #ax.add_feature(cfeature.OCEAN,facecolor=ocean_color,edgecolor="none",zorder=0,)
+    #ax.add_feature(cfeature.LAND,facecolor=land_color,edgecolor="none",zorder=0,)
+
+    ax.add_feature(cartopy.feature.OCEAN, edgecolor="none",linewidth=0.01,zorder=0,)
+    ax.add_feature(cartopy.feature.LAND, edgecolor="none",linewidth=0.01,zorder=0,)
+    
     ax.add_feature(cfeature.COASTLINE, linewidth=0.8)
     
     # Step 4: Plot the bounding box as a polygon
@@ -998,8 +1068,14 @@ def plot_bounding_box_many(infov, title=None, fileout=None):
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_global()
 
-    ax.add_feature(cartopy.feature.OCEAN, edgecolor='w', linewidth=0.01)
-    ax.add_feature(cartopy.feature.LAND, edgecolor='w', linewidth=0.01)
+    #land_color="0.75"
+    #ocean_color="0.85"
+    #ax.add_feature(cfeature.OCEAN,facecolor=ocean_color,edgecolor="none",zorder=0,)
+    #ax.add_feature(cfeature.LAND,facecolor=land_color,edgecolor="none",zorder=0,)
+
+    ax.add_feature(cartopy.feature.OCEAN, edgecolor="none",linewidth=0.01,zorder=0,)
+    ax.add_feature(cartopy.feature.LAND, edgecolor="none",linewidth=0.01,zorder=0,)
+
     ax.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
 
     for info in infov:

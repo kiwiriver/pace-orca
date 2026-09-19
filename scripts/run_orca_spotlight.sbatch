@@ -31,6 +31,8 @@ input_data_path='None'
 #timestamp='20260701T192832'
 #timestamp='20260707T194004'
 #timestamp='20260717T171516'
+#california
+#timestamp='20250109T200019'
 
 #canada fire
 #timestamp='20260716T181854'
@@ -48,8 +50,20 @@ input_data_path='None'
 #20240927T210427
 
 #dust and smoke
-timestamp='20260715T123919'
+#timestamp='20260715T123919'
 #timestamp='20260715T142237'
+
+#tornado and dust atlantic
+#timestamp='20260828T151633'
+
+#caribean with dust
+#timestamp='20260912T171202'
+
+#clear sky with smoke
+#timestamp='20250612T165904'
+
+#west africa smoke
+timestamp='20260730T130735'
 
 #header='land_v4.0'
 #l2str='V4_0'
@@ -59,7 +73,7 @@ timestamp='20260715T123919'
 #l2str='V3_0'
 #suite1='L2.MAPOL_OCEAN'
 
-header='ocean_v4.0_angle'
+header='ocean_v4.0_angle_s4'
 l2str='V4_0'
 suite1='L2.MAPOL_OCEAN'
 
@@ -94,6 +108,8 @@ product="harp2_fastmapol"
 #include more pixels, 0, 0.01
 aod_min_default=0.001 #filtering
 aod_min_plot_default=0.001 #plot
+#aod_min_default=0.0 #filtering, no output?
+#aod_min_plot_default=0.0 #plot
 #aod_max_plot_default=2.0
 #aod_max_plot_default=1.0
 aod_max_plot_default=0.5
