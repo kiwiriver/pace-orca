@@ -627,7 +627,7 @@ def plot_rgb(lon2, lat2, tmp2, tmp3, plot_type='i', figsize = (6, 6), \
             bbox_inches="tight",
             pad_inches=0.1,
         )
-    
+
     plt.close(fig)
 
 def plot_crossdateline_extent(lon2, lat2, aspect_ratio=1.2):

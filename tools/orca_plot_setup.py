@@ -34,6 +34,7 @@ def load_dict1v(aot_max=1.0, nv_max=90):
         "aot": [[0, aot_max], "YlOrRd", "linear", "max"],
         "aot_fine": [[0, aot_max], "YlOrRd", "linear", "max"],
         "aot_coarse": [[0, aot_max], "YlOrRd", "linear", "max"],
+        "fmf": [[0, 1], "RuYlRd", "linear", None],
         "ssa": [[0.8, 1.0], "RdYlBu", "linear", "min"],
         "fvf": [[0, 1], "RdYlBu_r", "linear", None],
         "angstrom_440_670": [[0, 2], "RdYlBu_r", "linear", "both"],
@@ -98,14 +99,14 @@ def load_dict1v(aot_max=1.0, nv_max=90):
         "rhos_nadir_std": [[0, 1], "magma", "linear", "max"],
 
         # Retrieval diagnostics
-        "chi2": [[0, 2], "viridis", "linear", "max"],
-        "chisqr_mapol": [[0, 2], "viridis", "linear", "max"],
-        "timing": [[0, 2], "viridis", "linear", "max"],
-        "nv_ref": [[0, nv_max], "viridis", "linear", None],
-        "nv_rho": [[0, nv_max], "viridis", "linear", None],
-        "nv_dolp": [[0, nv_max], "viridis", "linear", None],
-        "quality_flag": [[0, 3], "viridis", "linear", "max"],
-        "qual": [[0, 3], "viridis", "linear", "max"],
+        "chi2": [[0, 2], "Spectral_r", "linear", "max"],
+        "chisqr_mapol": [[0, 2], "Spectral_r", "linear", "max"],
+        "timing": [[0, 2], "Spectral_r", "linear", "max"],
+        "nv_ref": [[0, nv_max], "Spectral_r", "linear", None],
+        "nv_rho": [[0, nv_max], "Spectral_r", "linear", None],
+        "nv_dolp": [[0, nv_max], "Spectral_r", "linear", None],
+        "quality_flag": [[0, 3], "Spectral_r", "linear", "max"],
+        "qual": [[0, 3], "Spectral_r", "linear", "max"],
 
         # Land-model parameters
         "land_fiso": [[0, 1], "Spectral_r", "linear", None],

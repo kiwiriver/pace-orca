@@ -189,8 +189,15 @@ if(product=='harp2_fastmapol'):
     iwv550=1 #550 for aod_min
     iwv_aod=1 # for aod plot
     iwv_rrs=0 # for rrs plot
+
+    #for regular plot
     criteria = (30, 30, 2.0)
+    #includ all pixel
+    criteria = (0, 0, np.inf)
+    
     nv_max = 90
+    
+    
 elif(product=='spexone_fastmapol'):
     outputfile_header='spexone_fastmapol_'
 
@@ -232,6 +239,9 @@ elif(product=='spexone_remotap'):
     iwv_rrs=3 #440
     criteria = (None, None, 5.0)
     nv_max = 170
+
+
+print("nv_max, and criteria for plot except for aod, nv, chi2", nv_max, criteria)
 
 outputfile_header = outputfile_header + header+'_'
 
@@ -354,8 +364,8 @@ print("total file after selection", nfile)
 
 #'text_box', 'globe', 'rgb'
 sequence = [['globe', 'rgb0',  'rp0', 'dolp0'], \
-            ['aot', 'ssa', 'fvf'], \
-            ['aot_fine', 'aot_coarse', 'angstrom_440_670'],\
+            ['aot', 'ssa', 'fmf'], \
+            ['aot_fine', 'aot_coarse', 'angstrom_440_670', 'fvf'],\
             ['sph', 'sph_fine', 'sph_coarse'],\
             ['alh', 'aerosol_lidar_ratio', 'aerosol_depol_ratio'], \
             ['mr', 'mr_fine', 'mr_coarse', 'mi', 'mi_fine', 'mi_coarse'], \
@@ -375,8 +385,8 @@ sequence = [['globe', 'rgb0',  'rp0', 'dolp0'], \
             ]
 
 titlev_custom = [["", "Reflectance",  "Rp", "DoLP"], \
-                 ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Volume Fraction"],\
-                 ['AOD (fine)', 'AOD (coarse)', 'Angstrom(440/670)'],\
+                 ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Fraction"],\
+                 ['AOD (fine)', 'AOD (coarse)', 'Angstrom(440/670)',"Fine Mode Fraction"],\
                  ["Total Spherical Fraction", "Fine Spherical Fraction", "Coarse Spherical Fraction"], \
                   ["Aerosol Layer height",'Aerosol lidar ratio', 'Aerosol depol ratio'],\
                  ["Total refractive index(Real)", "Fine refractive index(Real)", "Coarse refractive index(Real)", "Total refractive index(Imag)", "Fine refractive index(Imag)", "Coarse refractive index(Imag)"],\
@@ -461,7 +471,7 @@ figsize = (8,8)
 infov, infov_dict = make_plot(filev2, plot_path, l1c_path=l1c_path, \
                               figsize=figsize,\
                               flag_earthdata_cloud=flag_earthdata_cloud,\
-                              aod_min_plot=aod_min_plot,\
+                              aod_min_plot=aod_min_plot,criteria=criteria,\
                               sensor=sensor, suite1=suite1,suite2=suite2, \
                               ivv=ivv, ivvp=ivvp, ilabelv=ilabelv,\
                               iwvv=iwvv,iwvvp=iwvvp,\

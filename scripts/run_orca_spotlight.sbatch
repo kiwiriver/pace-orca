@@ -73,7 +73,7 @@ timestamp='20260730T130735'
 #l2str='V3_0'
 #suite1='L2.MAPOL_OCEAN'
 
-header='ocean_v4.0_angle_s4'
+header='ocean_v4.0_angle_s5_all'
 l2str='V4_0'
 suite1='L2.MAPOL_OCEAN'
 
@@ -111,8 +111,8 @@ aod_min_plot_default=0.001 #plot
 #aod_min_default=0.0 #filtering, no output?
 #aod_min_plot_default=0.0 #plot
 #aod_max_plot_default=2.0
-#aod_max_plot_default=1.0
-aod_max_plot_default=0.5
+aod_max_plot_default=1.0
+#aod_max_plot_default=0.5
 
 npixel_min_default=1
 
