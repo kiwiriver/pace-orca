@@ -385,8 +385,8 @@ sequence = [['globe', 'rgb0',  'rp0', 'dolp0'], \
             ]
 
 titlev_custom = [["", "Reflectance",  "Rp", "DoLP"], \
-                 ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Fraction"],\
-                 ['AOD (fine)', 'AOD (coarse)', 'Angstrom(440/670)',"Fine Mode Fraction"],\
+                 ["Total AOD (550nm)", "Total SSA (550nm)", "Fine Mode Fraction (AOD)"],\
+                 ['AOD (fine)', 'AOD (coarse)', 'Angstrom(440/670)',"Fine Mode Fraction (Volume)"],\
                  ["Total Spherical Fraction", "Fine Spherical Fraction", "Coarse Spherical Fraction"], \
                   ["Aerosol Layer height",'Aerosol lidar ratio', 'Aerosol depol ratio'],\
                  ["Total refractive index(Real)", "Fine refractive index(Real)", "Coarse refractive index(Real)", "Total refractive index(Imag)", "Fine refractive index(Imag)", "Coarse refractive index(Imag)"],\

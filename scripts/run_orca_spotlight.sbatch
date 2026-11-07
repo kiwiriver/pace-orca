@@ -65,6 +65,8 @@ input_data_path='None'
 #west africa smoke
 timestamp='20260730T130735'
 
+#20260730T170375
+
 #header='land_v4.0'
 #l2str='V4_0'
 #suite1='L2.MAPOL_LAND'
